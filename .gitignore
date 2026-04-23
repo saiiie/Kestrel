@@ -1,0 +1,35 @@
+# =========================
+# 1. OS & IDE Files
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# =========================
+# 2. Node.js (Frontend, API Gateway, Dispatcher)
+# =========================
+node_modules/
+dist/
+build/
+npm-debug.log*
+
+# =========================
+# 3. Java & Spring Boot (Sentinel)
+# =========================
+target/
+*.class
+*.jar
+*.war
+.mvn/
+!mvnw
+!mvnw.cmd
+
+# =========================
+# 4. Environment Variables & Secrets (CRITICAL)
+# =========================
+.env
+.env.local
+.env.development
+.env.production
