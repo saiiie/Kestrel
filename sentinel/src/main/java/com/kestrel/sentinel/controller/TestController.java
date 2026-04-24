@@ -2,6 +2,7 @@ package com.kestrel.sentinel.controller;
 
 import com.kestrel.sentinel.dto.AlertPayload;
 import com.kestrel.sentinel.service.AlertPublisherService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -12,21 +13,24 @@ public class TestController {
 
     private final AlertPublisherService alertPublisherService;
 
+    // 🌟 THIS IS THE MAGIC! It pulls the URL directly from your secret properties
+    // file
+    @Value("${discord.test.webhook}")
+    private String testWebhookUrl;
+
     public TestController(AlertPublisherService alertPublisherService) {
         this.alertPublisherService = alertPublisherService;
     }
 
-    // POST: Manually trigger a test alert to RabbitMQ
     @PostMapping("/trigger")
     public String triggerTestAlert() {
         AlertPayload payload = new AlertPayload(
-                "https://discord.com/api/webhooks/your_test_url",
+                testWebhookUrl, // 🌟 Now we use the secure placeholder!
                 "bitcoin",
                 "DROPS_BELOW",
                 new BigDecimal("65000.00"),
-                new BigDecimal("64500.00") // Oh no, it dropped!
-        );
-        
+                new BigDecimal("64500.00"));
+
         alertPublisherService.publishAlert(payload);
         return "🚀 Test alert injected into RabbitMQ! Go check http://localhost:15672/#/queues";
     }
