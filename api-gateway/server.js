@@ -47,6 +47,16 @@ app.delete('/api/rules/:ruleId', async (req, res) => {
     }
 });
 
+// 4. Fetch recent activity history
+app.get('/api/history/user/:userId', async (req, res) => {
+    try {
+        const response = await axios.get(`${SENTINEL_URL}/api/history/user/${req.params.userId}`);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to fetch history' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);
