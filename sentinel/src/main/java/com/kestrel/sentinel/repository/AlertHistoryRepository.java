@@ -1,4 +1,4 @@
-package main.java.com.kestrel.sentinel.repository;
+package com.kestrel.sentinel.repository;
 
 import com.kestrel.sentinel.model.AlertHistory;
 import org.springframework.data.jpa.repository.JpaRepository;

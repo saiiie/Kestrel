@@ -1,4 +1,4 @@
-package main.java.com.kestrel.sentinel.model;
+package com.kestrel.sentinel.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package main.java.com.kestrel.sentinel.controller;
+package com.kestrel.sentinel.controller;
 
 import com.kestrel.sentinel.model.AlertHistory;
 import com.kestrel.sentinel.service.AlertHistoryService;
