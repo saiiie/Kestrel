@@ -2,11 +2,13 @@ import React from 'react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import Footer from '../components/Footer';
+import CustomCursor from '../components/CustomCursor';
 
 const DashboardLayout = ({ children }) => {
   return (
     // The main background color for the entire app (Deep Slate/Navy)
     <div className="flex h-screen bg-[#090A11] text-white font-sans overflow-hidden">
+      <CustomCursor />
       
       {/* Left Sidebar */}
       <Sidebar />
