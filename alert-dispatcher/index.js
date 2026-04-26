@@ -24,7 +24,12 @@ async function startDispatcher() {
             if (msg !== null) {
                 try {
                     // Parse the JSON payload coming from Java
-                    const payload = JSON.parse(msg.content.toString());
+                    const rawContent = msg.content.toString();
+                    console.log('📦 Raw message received:', rawContent);
+                    
+                    const payload = JSON.parse(rawContent);
+                    console.log('📝 Parsed payload:', payload);
+                    
                     console.log(`\n🚨 Alert received for ${payload.assetId}! Dispatching to Discord...`);
 
                     // 4. Send the Discord Message

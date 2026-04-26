@@ -57,6 +57,16 @@ app.get('/api/history/user/:userId', async (req, res) => {
     }
 });
 
+// Fetch form configuration options (Assets & Conditions)
+app.get('/api/config/form-options', async (req, res) => {
+    try {
+        const response = await axios.get(`${SENTINEL_URL}/api/config/form-options`);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to fetch form options' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);

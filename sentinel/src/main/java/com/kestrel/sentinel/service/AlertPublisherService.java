@@ -21,11 +21,9 @@ public class AlertPublisherService {
 
     public void publishAlert(AlertPayload payload) {
         try {
-            // Convert our Java record into a clean JSON string for Node.js
-            String jsonMessage = objectMapper.writeValueAsString(payload);
-            
             // Drop it into the RabbitMQ queue
-            rabbitTemplate.convertAndSend(QUEUE_NAME, jsonMessage);
+            // The Jackson2JsonMessageConverter we configured in RabbitConfig will handle the JSON conversion
+            rabbitTemplate.convertAndSend(QUEUE_NAME, payload);
             
             System.out.println("🚀 ALERT DISPATCHED to RabbitMQ: " + payload.assetId());
         } catch (Exception e) {
