@@ -8,7 +8,7 @@ const SummaryCard = ({ rules }) => {
     const pausedAlerts = totalAlerts - activeAlerts;
 
     return (
-        <div className="bg-[#1A1D2D] rounded-xl p-6 border border-gray-800 flex flex-col justify-between h-full">
+        <div className="bg-[#0F111A] rounded-xl p-6 border border-gray-800/50 flex flex-col justify-between h-full shadow-lg">
             <div>
                 <h2 className="text-lg font-semibold text-white">Active Alerts</h2>
                 <p className="text-sm text-gray-400 mt-1">Monitoring {totalAlerts} conditions</p>

@@ -17,7 +17,7 @@ const ActivityFeed = ({ history, onClearHistory }) => {
     };
 
     return (
-        <div className="bg-[#1A1D2D] rounded-xl border border-gray-800 p-6 h-full">
+        <div className="bg-[#0F111A] rounded-xl border border-gray-800/50 p-6 h-full shadow-lg">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-white tracking-wide">Recent Activity</h3>
                 <button
