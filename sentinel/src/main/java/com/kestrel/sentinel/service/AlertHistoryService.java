@@ -21,4 +21,15 @@ public class AlertHistoryService {
     public List<AlertHistory> getRecentHistory(Long userId) {
         return repository.findTop10ByUserIdOrderByTriggeredAtDesc(userId);
     }
+
+    @org.springframework.context.event.EventListener
+    public void handleAlertActivityEvent(com.kestrel.sentinel.event.AlertActivityEvent event) {
+        AlertHistory history = new AlertHistory(
+            event.getUserId(),
+            event.getAssetId(),
+            event.getTitle(),
+            event.getDescription()
+        );
+        repository.save(history);
+    }
 }

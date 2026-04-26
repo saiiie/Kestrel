@@ -16,21 +16,44 @@ const Dashboard = () => {
 
     const userId = 1;
 
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch(`http://localhost:5000/api/history/user/${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                console.log("📜 Latest Activity History:", data);
+                setHistory(data);
+            }
+        } catch (error) {
+            console.error("❌ Failed to fetch history:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Fetch all three endpoints at the exact same time
-                const [rulesRes, historyRes, optionsRes] = await Promise.all([
-                    fetch(`http://localhost:5000/api/rules/user/${userId}`),
-                    fetch(`http://localhost:5000/api/history/user/${userId}`),
-                    fetch(`http://localhost:5000/api/config/form-options`) // <-- NEW FETCH
+                // Fetch each with individual error handling to avoid one crash blocking everything
+                const fetchWithLogs = async (url, setter, label) => {
+                    try {
+                        const res = await fetch(url);
+                        if (res.ok) {
+                            const data = await res.json();
+                            console.log(`✅ ${label} Data:`, data);
+                            setter(data);
+                        } else {
+                            console.error(`❌ ${label} failed with status: ${res.status}`);
+                        }
+                    } catch (e) {
+                        console.error(`❌ Error fetching ${label}:`, e.message);
+                    }
+                };
+
+                await Promise.all([
+                    fetchWithLogs(`http://localhost:5000/api/rules/user/${userId}`, setRules, "Rules"),
+                    fetchHistory(),
+                    fetchWithLogs(`http://localhost:5000/api/config/form-options`, setFormOptions, "Form Options")
                 ]);
 
-                if (rulesRes.ok && historyRes.ok && optionsRes.ok) {
-                    setRules(await rulesRes.json());
-                    setHistory(await historyRes.json());
-                    setFormOptions(await optionsRes.json()); // <-- SAVE TO STATE
-                }
             } catch (error) {
                 console.error("Failed to fetch Kestrel data:", error);
             } finally {
@@ -55,7 +78,11 @@ const Dashboard = () => {
 
         // Fetch immediately on load, then every 5 seconds
         fetchPrices();
-        const interval = setInterval(fetchPrices, 5000);
+        fetchHistory(); // 🌟 Also fetch history on interval!
+        const interval = setInterval(() => {
+            fetchPrices();
+            fetchHistory();
+        }, 5000);
 
         return () => clearInterval(interval); // Cleanup on unmount
     }, []);
@@ -81,6 +108,9 @@ const Dashboard = () => {
                 // Add the new rule to the table instantly!
                 setRules([...rules, savedRule]);
                 setIsModalOpen(false); // Close the modal
+                
+                // 🌟 Trigger a history refresh so the card updates instantly!
+                fetchHistory();
             }
         } catch (error) {
             console.error("Failed to create alert:", error);

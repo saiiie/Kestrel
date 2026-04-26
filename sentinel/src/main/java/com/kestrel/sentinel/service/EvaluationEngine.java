@@ -17,12 +17,14 @@ public class EvaluationEngine {
     private final AlertRuleService ruleService;
     private final MarketDataService marketDataService;
     private final AlertPublisherService publisherService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public EvaluationEngine(AlertRuleService ruleService, MarketDataService marketDataService,
-            AlertPublisherService publisherService) {
+            AlertPublisherService publisherService, org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.ruleService = ruleService;
         this.marketDataService = marketDataService;
         this.publisherService = publisherService;
+        this.eventPublisher = eventPublisher;
     }
 
     // This loop executes automatically every 30,000 milliseconds (30 seconds)
@@ -67,6 +69,18 @@ public class EvaluationEngine {
 
                 // Drop into RabbitMQ
                 publisherService.publishAlert(payload);
+
+                // Publish trigger event for Activity Feed
+                String title = rule.getAssetId().substring(0, 1).toUpperCase() + rule.getAssetId().substring(1) + " Alert Triggered";
+                String description = "Price reached $" + livePrice + " (" + rule.getConditionType() + " $" + rule.getTargetPrice() + ")";
+                
+                eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
+                    this,
+                    rule.getUser().getId(),
+                    rule.getAssetId(),
+                    title,
+                    description
+                ));
 
                 // Auto-pause the rule so it doesn't spam their Discord every 30 seconds
                 rule.setActive(false);

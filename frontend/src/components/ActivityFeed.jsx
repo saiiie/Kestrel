@@ -1,41 +1,57 @@
 import React from 'react';
+import { renderAssetIcon } from '../utils/tableHelpers'; // 🌟 Reuse our beautiful icons!
 
-// Accept the 'history' prop
 const ActivityFeed = ({ history }) => {
 
-    // A quick helper to format the ugly Java timestamp into a readable date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
+    // A quick helper to turn timestamps into "2 mins ago" or "1 hour ago"
+    const getRelativeTime = (dateString) => {
+        const now = new Date();
+        const past = new Date(dateString);
+        const diffInMinutes = Math.floor((now - past) / (1000 * 60));
+
+        if (diffInMinutes < 1) return 'Just now';
+        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours}h ago`;
+        return `${Math.floor(diffInHours / 24)}d ago`;
     };
 
     return (
-        <div className="bg-[#1A1D2D] rounded-xl p-6 border border-gray-800 flex flex-col h-full">
+        <div className="bg-[#1A1D2D] rounded-xl border border-gray-800 p-6 h-full">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
+                <h3 className="text-lg font-bold text-white tracking-wide">Recent Activity</h3>
                 <button className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                     View All
                 </button>
             </div>
 
-            <div className="flex-1 space-y-5 overflow-y-auto max-h-[250px] pr-2 custom-scrollbar">
-                {history.length === 0 ? (
-                    <p className="text-gray-500 text-sm mt-4">No recent activity detected.</p>
+            <div className="space-y-6">
+                {!history || history.length === 0 ? (
+                    <p className="text-gray-500 text-sm text-center py-4">No recent activity detected.</p>
                 ) : (
-                    history.map((activity) => (
-                        <div key={activity.id} className="flex items-start">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-4 bg-orange-500/20">
-                                <span className="text-sm">🔔</span>
+                    history.map((event) => (
+                        <div key={event.id} className="flex items-start group">
+
+                            {/* Asset Icon */}
+                            <div className="w-8 h-8 rounded-full bg-gray-800/50 flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                {renderAssetIcon(event.assetId)}
                             </div>
 
-                            <div className="flex-1">
-                                <h3 className="text-sm font-medium text-white">{activity.title}</h3>
-                                <p className="text-xs text-gray-400 mt-1">{activity.description}</p>
+                            {/* Event Details */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">
+                                    {event.title}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1 truncate">
+                                    {event.description}
+                                </p>
                             </div>
 
-                            <span className="text-xs font-medium text-gray-500 whitespace-nowrap ml-4">
-                                {formatDate(activity.triggeredAt)}
-                            </span>
+                            {/* Timestamp */}
+                            <div className="text-xs font-medium text-gray-500 whitespace-nowrap ml-4 mt-1">
+                                {getRelativeTime(event.triggeredAt)}
+                            </div>
+
                         </div>
                     ))
                 )}

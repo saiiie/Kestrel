@@ -1,6 +1,5 @@
 package com.kestrel.sentinel.service;
 
-import com.kestrel.sentinel.model.AlertHistory;
 import com.kestrel.sentinel.model.AlertRule;
 import com.kestrel.sentinel.repository.AlertRuleRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,16 +16,16 @@ public class PricePollingEngine {
 
     private final CryptoPriceService priceService;
     private final AlertRuleRepository ruleRepository;
-    private final AlertHistoryService historyService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     private final RabbitTemplate rabbitTemplate;
 
     public PricePollingEngine(CryptoPriceService priceService,
             AlertRuleRepository ruleRepository,
-            AlertHistoryService historyService,
+            org.springframework.context.ApplicationEventPublisher eventPublisher,
             RabbitTemplate rabbitTemplate) {
         this.priceService = priceService;
         this.ruleRepository = ruleRepository;
-        this.historyService = historyService;
+        this.eventPublisher = eventPublisher;
         this.rabbitTemplate = rabbitTemplate;
     }
 
@@ -79,8 +78,13 @@ public class PricePollingEngine {
         String description = "Price reached $" + currentPrice + " (" + rule.getConditionType() + " $"
                 + rule.getTargetPrice() + ")";
 
-        AlertHistory historyEntry = new AlertHistory(rule.getUser().getId(), rule.getAssetId(), title, description);
-        historyService.saveHistory(historyEntry);
+        eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
+            this,
+            rule.getUser().getId(),
+            rule.getAssetId(),
+            title,
+            description
+        ));
 
         // 2. Disable the rule so it doesn't trigger every 60 seconds forever
         rule.setActive(false);

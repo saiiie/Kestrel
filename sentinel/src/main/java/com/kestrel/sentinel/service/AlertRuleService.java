@@ -1,7 +1,9 @@
 package com.kestrel.sentinel.service;
 
 import com.kestrel.sentinel.model.AlertRule;
+import com.kestrel.sentinel.model.AlertHistory;
 import com.kestrel.sentinel.repository.AlertRuleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,14 +12,29 @@ import java.util.List;
 public class AlertRuleService {
 
     private final AlertRuleRepository alertRuleRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
-    public AlertRuleService(AlertRuleRepository alertRuleRepository) {
+    public AlertRuleService(AlertRuleRepository alertRuleRepository, org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.alertRuleRepository = alertRuleRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // 1. Create or Update a rule
     public AlertRule saveRule(AlertRule rule) {
-        return alertRuleRepository.save(rule);
+        boolean isNew = rule.getId() == null;
+        AlertRule savedRule = alertRuleRepository.save(rule);
+        
+        if (isNew) {
+            eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
+                this,
+                savedRule.getUser().getId(),
+                savedRule.getAssetId(),
+                "New Alert Rule Created",
+                "Watching " + savedRule.getAssetId() + " for " + savedRule.getConditionType() + " $" + savedRule.getTargetPrice()
+            ));
+        }
+        
+        return savedRule;
     }
 
     // 2. Fetch all rules for a specific user's frontend dashboard

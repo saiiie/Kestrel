@@ -1,8 +1,7 @@
 package com.kestrel.sentinel.controller;
 
 import com.kestrel.sentinel.model.AlertHistory;
-import com.kestrel.sentinel.service.AlertHistoryService;
-import org.springframework.http.ResponseEntity;
+import com.kestrel.sentinel.repository.AlertHistoryRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,14 +10,14 @@ import java.util.List;
 @RequestMapping("/api/history")
 public class AlertHistoryController {
 
-    private final AlertHistoryService alertHistoryService;
+    private final AlertHistoryRepository historyRepository;
 
-    public AlertHistoryController(AlertHistoryService alertHistoryService) {
-        this.alertHistoryService = alertHistoryService;
+    public AlertHistoryController(AlertHistoryRepository historyRepository) {
+        this.historyRepository = historyRepository;
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AlertHistory>> getUserHistory(@PathVariable Long userId) {
-        return ResponseEntity.ok(alertHistoryService.getRecentHistory(userId));
+    public List<AlertHistory> getUserHistory(@PathVariable Long userId) {
+        return historyRepository.findTop10ByUserIdOrderByTriggeredAtDesc(userId);
     }
 }

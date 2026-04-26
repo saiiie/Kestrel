@@ -17,6 +17,7 @@ public class AlertHistory {
     private String description;
     
     @Column(updatable = false)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime triggeredAt = LocalDateTime.now();
 
     // Default constructor for JPA
