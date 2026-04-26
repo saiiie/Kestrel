@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const AlertModal = ({ isOpen, onClose, options, onSave }) => {
-    // State for our form inputs
-    const [asset, setAsset] = useState('bitcoin');
-    const [condition, setCondition] = useState('DROPS_BELOW');
-    const [price, setPrice] = useState('65000.00');
-    const [isActive, setIsActive] = useState(true);
+const AlertModal = ({ isOpen, onClose, options, onSave, initialData }) => {
+    // State for our form inputs - Now initialized directly from props!
+    const [asset, setAsset] = useState(initialData ? initialData.assetId : '');
+    const [condition, setCondition] = useState(initialData ? initialData.conditionType : '');
+    const [price, setPrice] = useState(initialData ? initialData.targetPrice?.toString() : '');
+    const [isActive, setIsActive] = useState(initialData ? initialData.active : true);
 
     if (!isOpen) return null;
+    const isEditing = !!initialData;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -17,7 +18,7 @@ const AlertModal = ({ isOpen, onClose, options, onSave }) => {
 
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b border-gray-800/60">
-                    <h3 className="text-white font-semibold tracking-wide">New Alert</h3>
+                    <h3 className="text-white font-semibold tracking-wide">Asset Alert</h3>
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-white transition-colors"
@@ -41,6 +42,7 @@ const AlertModal = ({ isOpen, onClose, options, onSave }) => {
                             onChange={(e) => setAsset(e.target.value)}
                             className="w-full bg-[#0F111A] border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer"
                         >
+                            <option value="" disabled>Select an asset...</option>
                             {options.assets.map((a) => (
                                 <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
@@ -58,6 +60,7 @@ const AlertModal = ({ isOpen, onClose, options, onSave }) => {
                                 onChange={(e) => setCondition(e.target.value)}
                                 className="w-full bg-[#0F111A] border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer"
                             >
+                                <option value="" disabled>Select condition...</option>
                                 {options.conditions.map((c) => (
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
@@ -109,10 +112,10 @@ const AlertModal = ({ isOpen, onClose, options, onSave }) => {
 
                     {/* 🌟 NEW: Package the state and send it to Dashboard */}
                     <button
-                        onClick={() => onSave({ asset, condition, price, isActive })}
+                        onClick={() => onSave(isEditing ? { ...initialData, asset, condition, price, isActive } : { asset, condition, price, isActive })}
                         className="px-5 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-colors shadow-sm"
                     >
-                        Save Changes
+                        {isEditing ? 'Update Alert' : 'Create Alert'}
                     </button>
                 </div>
 

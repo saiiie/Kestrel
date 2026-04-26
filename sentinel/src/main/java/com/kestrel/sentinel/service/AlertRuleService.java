@@ -37,4 +37,14 @@ public class AlertRuleService {
             alertRuleRepository.deleteById(ruleId);
         }
     }
+
+    public AlertRule updateRule(Long id, AlertRule updatedData) {
+        return alertRuleRepository.findById(id).map(existingRule -> {
+            existingRule.setAssetId(updatedData.getAssetId());
+            existingRule.setConditionType(updatedData.getConditionType());
+            existingRule.setTargetPrice(updatedData.getTargetPrice());
+            existingRule.setActive(updatedData.isActive());
+            return alertRuleRepository.save(existingRule);
+        }).orElseThrow(() -> new RuntimeException("Rule not found with id " + id));
+    }
 }

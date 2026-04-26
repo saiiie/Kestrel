@@ -2,7 +2,7 @@ import React from 'react';
 import { renderAssetIcon, getConditionStyle } from '../utils/tableHelpers';
 import LiveTrackerCell from './LiveTrackerCell';
 
-const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onDeleteAlert }) => {
+const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onEditAlert, onDeleteAlert }) => {
 
     return (
         <div className="mt-8">
@@ -40,7 +40,7 @@ const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onDeleteAlert }) => {
                                 const condition = getConditionStyle(rule.conditionType, rule.targetPrice);
 
                                 return (
-                                    <tr key={rule.id} className="hover:bg-[#202436] transition-colors group">
+                                    <tr key={rule.id} onClick={() => onEditAlert(rule)} className="hover:bg-[#202436] transition-colors group cursor-pointer">
 
                                         {/* Asset Column */}
                                         <td className="py-4 px-6">
@@ -79,7 +79,10 @@ const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onDeleteAlert }) => {
                                         {/* Trash Icon Column */}
                                         <td className="py-4 px-6 text-center">
                                             <button
-                                                onClick={() => onDeleteAlert(rule.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 🌟 Stops the row's onClick from firing!
+                                                    onDeleteAlert(rule.id);
+                                                }}
                                                 className="text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

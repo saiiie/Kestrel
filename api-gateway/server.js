@@ -77,6 +77,16 @@ app.get('/api/prices/live', async (req, res) => {
     }
 });
 
+// Update an existing Alert Rule
+app.put('/api/rules/:ruleId', async (req, res) => {
+    try {
+        const response = await axios.put(`${SENTINEL_URL}/api/rules/${req.params.ruleId}`, req.body);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to update alert rule' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);

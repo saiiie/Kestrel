@@ -12,6 +12,7 @@ const Dashboard = () => {
     const [formOptions, setFormOptions] = useState({ assets: [], conditions: [] }); // <-- NEW STATE
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingRule, setEditingRule] = useState(null);
 
     const userId = 1;
 
@@ -86,6 +87,34 @@ const Dashboard = () => {
         }
     };
 
+    const handleUpdateAlert = async (updatedData) => {
+        try {
+            const payload = {
+                user: { id: userId }, // Keep the JPA mapping happy!
+                assetId: updatedData.asset,
+                conditionType: updatedData.condition,
+                targetPrice: parseFloat(updatedData.price),
+                active: updatedData.isActive
+            };
+
+            const response = await fetch(`http://localhost:5000/api/rules/${updatedData.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const updatedRule = await response.json();
+                // Swap out the old rule in the array with the newly updated one instantly
+                setRules(rules.map(r => r.id === updatedRule.id ? updatedRule : r));
+                setIsModalOpen(false);
+                setEditingRule(null);
+            }
+        } catch (error) {
+            console.error("Failed to update alert:", error);
+        }
+    };
+
     const handleDeleteAlert = async (ruleId) => {
         try {
             const response = await fetch(`http://localhost:5000/api/rules/${ruleId}`, {
@@ -99,6 +128,11 @@ const Dashboard = () => {
         } catch (error) {
             console.error("Failed to delete alert:", error);
         }
+    };
+
+    const handleOpenEditModal = (rule) => {
+        setEditingRule(rule);
+        setIsModalOpen(true);
     };
 
     return (
@@ -129,16 +163,22 @@ const Dashboard = () => {
                             rules={rules}
                             livePrices={livePrices}
                             onOpenNewAlert={() => setIsModalOpen(true)}
+                            onEditAlert={handleOpenEditModal}
                             onDeleteAlert={handleDeleteAlert}
                         />
                     </div>
                 </div>
             )}
             <AlertModal
+                key={editingRule ? `edit-${editingRule.id}` : 'new-alert'}
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingRule(null);
+                }}
                 options={formOptions}
-                onSave={handleCreateAlert}
+                onSave={editingRule ? handleUpdateAlert : handleCreateAlert}
+                initialData={editingRule}
             />
         </DashboardLayout>
     );

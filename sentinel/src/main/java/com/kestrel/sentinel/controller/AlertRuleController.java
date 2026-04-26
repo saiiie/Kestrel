@@ -36,4 +36,9 @@ public class AlertRuleController {
         alertRuleService.deleteRule(ruleId);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AlertRule> updateRule(@PathVariable Long id, @RequestBody AlertRule updatedRule) {
+        return ResponseEntity.ok(alertRuleService.updateRule(id, updatedRule));
+    }
 }
