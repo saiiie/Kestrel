@@ -165,6 +165,22 @@ const Dashboard = () => {
         setIsModalOpen(true);
     };
 
+    const handleClearHistory = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/history/user/${userId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                // Instantly clear the UI!
+                setHistory([]);
+                console.log("🗑️ Recent activity cleared.");
+            }
+        } catch (error) {
+            console.error("Failed to clear history:", error);
+        }
+    };
+
     return (
         <DashboardLayout>
             {isLoading ? (
@@ -182,7 +198,7 @@ const Dashboard = () => {
                         </div>
                         <div className="lg:col-span-2">
                             {/* Pass the history data down to the Activity Feed */}
-                            <ActivityFeed history={history} />
+                            <ActivityFeed history={history} onClearHistory={handleClearHistory} />
                         </div>
                     </div>
 

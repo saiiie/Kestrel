@@ -57,6 +57,16 @@ app.get('/api/history/user/:userId', async (req, res) => {
     }
 });
 
+// 5. Clear activity history
+app.delete('/api/history/user/:userId', async (req, res) => {
+    try {
+        await axios.delete(`${SENTINEL_URL}/api/history/user/${req.params.userId}`);
+        res.status(204).send();
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to clear history' });
+    }
+});
+
 // Fetch form configuration options (Assets & Conditions)
 app.get('/api/config/form-options', async (req, res) => {
     try {

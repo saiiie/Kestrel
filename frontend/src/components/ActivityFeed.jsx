@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderAssetIcon } from '../utils/tableHelpers'; // 🌟 Reuse our beautiful icons!
 
-const ActivityFeed = ({ history }) => {
+const ActivityFeed = ({ history, onClearHistory }) => {
 
     // A quick helper to turn timestamps into "2 mins ago" or "1 hour ago"
     const getRelativeTime = (dateString) => {
@@ -20,12 +20,15 @@ const ActivityFeed = ({ history }) => {
         <div className="bg-[#1A1D2D] rounded-xl border border-gray-800 p-6 h-full">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-white tracking-wide">Recent Activity</h3>
-                <button className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                    View All
+                <button
+                    onClick={onClearHistory}
+                    className="text-xs font-medium text-gray-500 hover:text-red-400 transition-colors tracking-wider"
+                >
+                    Clear Activity
                 </button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
                 {!history || history.length === 0 ? (
                     <p className="text-gray-500 text-sm text-center py-4">No recent activity detected.</p>
                 ) : (

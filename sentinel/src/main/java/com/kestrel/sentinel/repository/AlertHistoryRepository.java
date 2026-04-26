@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long> {
     List<AlertHistory> findTop10ByUserIdOrderByTriggeredAtDesc(Long userId);
+    List<AlertHistory> findByUserId(Long userId);
 }
