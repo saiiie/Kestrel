@@ -110,7 +110,6 @@ const AlertModal = ({ isOpen, onClose, options, onSave, initialData }) => {
                         Cancel
                     </button>
 
-                    {/* 🌟 NEW: Package the state and send it to Dashboard */}
                     <button
                         onClick={() => onSave(isEditing ? { ...initialData, asset, condition, price, isActive } : { asset, condition, price, isActive })}
                         className="px-5 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-colors shadow-sm"
