@@ -67,6 +67,16 @@ app.get('/api/config/form-options', async (req, res) => {
     }
 });
 
+// Fetch live cached prices
+app.get('/api/prices/live', async (req, res) => {
+    try {
+        const response = await axios.get(`${SENTINEL_URL}/api/prices/live`);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to fetch prices' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);

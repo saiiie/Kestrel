@@ -1,7 +1,8 @@
 import React from 'react';
 import { renderAssetIcon, getConditionStyle } from '../utils/tableHelpers';
+import LiveTrackerCell from './LiveTrackerCell';
 
-const AlertsTable = ({ rules, onOpenNewAlert, onDeleteAlert }) => {
+const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onDeleteAlert }) => {
 
     return (
         <div className="mt-8">
@@ -65,12 +66,7 @@ const AlertsTable = ({ rules, onOpenNewAlert, onDeleteAlert }) => {
                                         </td>
 
                                         {/* Live Tracker Column (Mocked progress for now until Websockets are added) */}
-                                        <td className="py-4 px-6">
-                                            <p className="text-sm font-semibold text-white mb-1.5">Tracking...</p>
-                                            <div className="w-32 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                                <div className={`h-full rounded-full ${rule.conditionType === 'RISES_ABOVE' ? 'bg-emerald-500' : 'bg-red-500'}`} style={{ width: '50%' }}></div>
-                                            </div>
-                                        </td>
+                                        <LiveTrackerCell rule={rule} currentPrice={livePrices[rule.assetId]} />
 
                                         {/* Status Column */}
                                         <td className="py-4 px-6 text-right">
@@ -82,7 +78,7 @@ const AlertsTable = ({ rules, onOpenNewAlert, onDeleteAlert }) => {
 
                                         {/* Trash Icon Column */}
                                         <td className="py-4 px-6 text-center">
-                                            <button 
+                                            <button
                                                 onClick={() => onDeleteAlert(rule.id)}
                                                 className="text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                                             >

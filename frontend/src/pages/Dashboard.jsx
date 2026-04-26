@@ -8,6 +8,7 @@ import AlertModal from '../components/AlertModal';
 const Dashboard = () => {
     const [rules, setRules] = useState([]);
     const [history, setHistory] = useState([]);
+    const [livePrices, setLivePrices] = useState({});
     const [formOptions, setFormOptions] = useState({ assets: [], conditions: [] }); // <-- NEW STATE
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +39,25 @@ const Dashboard = () => {
 
         fetchDashboardData();
     }, [userId]);
+
+    useEffect(() => {
+        const fetchPrices = async () => {
+            try {
+                const res = await fetch('http://localhost:5000/api/prices/live');
+                if (res.ok) {
+                    setLivePrices(await res.json());
+                }
+            } catch (error) {
+                console.error("Failed to fetch live prices.");
+            }
+        };
+
+        // Fetch immediately on load, then every 5 seconds
+        fetchPrices();
+        const interval = setInterval(fetchPrices, 5000);
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
 
     const handleCreateAlert = async (newAlertData) => {
         try {
@@ -107,6 +127,7 @@ const Dashboard = () => {
                         {/* Pass the rules data down to the Table and the open modal handler */}
                         <AlertsTable
                             rules={rules}
+                            livePrices={livePrices}
                             onOpenNewAlert={() => setIsModalOpen(true)}
                             onDeleteAlert={handleDeleteAlert}
                         />

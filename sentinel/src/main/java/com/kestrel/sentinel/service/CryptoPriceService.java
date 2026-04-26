@@ -11,9 +11,9 @@ public class CryptoPriceService {
 
     private final RestTemplate restTemplate;
 
-    // 🌟 NEW: Spring Boot will automatically grab this from your .env file!
-    @Value("${COINGECKO_API_URL:https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,cardano,polkadot&vs_currencies=usd}")
+    @Value("${COINGECKO_API_URL}")
     private String coinGeckoUrl;
+    private Map<String, Double> latestPrices = new HashMap<>();
 
     public CryptoPriceService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -33,10 +33,15 @@ public class CryptoPriceService {
                     }
                 }
             }
+            this.latestPrices = prices;
             return prices;
         } catch (Exception e) {
             System.err.println("Failed to fetch prices from CoinGecko: " + e.getMessage());
             return new HashMap<>();
         }
+    }
+
+    public Map<String, Double> getLatestCachedPrices() {
+        return latestPrices;
     }
 }
