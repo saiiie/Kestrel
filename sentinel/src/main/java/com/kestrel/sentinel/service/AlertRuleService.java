@@ -25,12 +25,16 @@ public class AlertRuleService {
         AlertRule savedRule = alertRuleRepository.save(rule);
         
         if (isNew) {
+            String assetName = savedRule.getAssetId().substring(0, 1).toUpperCase() + savedRule.getAssetId().substring(1);
+            String conditionText = com.kestrel.sentinel.event.AlertActivityEvent.formatCondition(savedRule.getConditionType());
+            String priceText = com.kestrel.sentinel.event.AlertActivityEvent.formatCurrency(savedRule.getTargetPrice());
+            
             eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
                 this,
                 savedRule.getUser().getId(),
                 savedRule.getAssetId(),
                 "New Alert Rule Created",
-                "Watching " + savedRule.getAssetId() + " for " + savedRule.getConditionType() + " $" + savedRule.getTargetPrice()
+                "Watching " + assetName + " for " + conditionText + " $" + priceText
             ));
         }
         

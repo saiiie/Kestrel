@@ -73,10 +73,14 @@ public class PricePollingEngine {
         System.out.println("🚨 ALERT TRIGGERED: " + rule.getAssetId() + " hit " + currentPrice);
 
         // 1. Save to Database (This will instantly show up in our React Dashboard!)
-        String title = rule.getAssetId().substring(0, 1).toUpperCase() + rule.getAssetId().substring(1)
-                + " Alert Triggered";
-        String description = "Price reached $" + currentPrice + " (" + rule.getConditionType() + " $"
-                + rule.getTargetPrice() + ")";
+        String assetName = rule.getAssetId().substring(0, 1).toUpperCase() + rule.getAssetId().substring(1);
+        String title = assetName + " Alert Triggered";
+        
+        String conditionText = com.kestrel.sentinel.event.AlertActivityEvent.formatCondition(rule.getConditionType());
+        String currentPriceText = com.kestrel.sentinel.event.AlertActivityEvent.formatCurrency(currentPrice);
+        String targetPriceText = com.kestrel.sentinel.event.AlertActivityEvent.formatCurrency(rule.getTargetPrice());
+
+        String description = "Price reached $" + currentPriceText + " (" + conditionText + " $" + targetPriceText + ")";
 
         eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
             this,

@@ -71,8 +71,14 @@ public class EvaluationEngine {
                 publisherService.publishAlert(payload);
 
                 // Publish trigger event for Activity Feed
-                String title = rule.getAssetId().substring(0, 1).toUpperCase() + rule.getAssetId().substring(1) + " Alert Triggered";
-                String description = "Price reached $" + livePrice + " (" + rule.getConditionType() + " $" + rule.getTargetPrice() + ")";
+                String assetName = rule.getAssetId().substring(0, 1).toUpperCase() + rule.getAssetId().substring(1);
+                String title = assetName + " Alert Triggered";
+                
+                String conditionText = com.kestrel.sentinel.event.AlertActivityEvent.formatCondition(rule.getConditionType());
+                String livePriceText = com.kestrel.sentinel.event.AlertActivityEvent.formatCurrency(livePrice);
+                String targetPriceText = com.kestrel.sentinel.event.AlertActivityEvent.formatCurrency(rule.getTargetPrice());
+                
+                String description = "Price reached $" + livePriceText + " (" + conditionText + " $" + targetPriceText + ")";
                 
                 eventPublisher.publishEvent(new com.kestrel.sentinel.event.AlertActivityEvent(
                     this,
