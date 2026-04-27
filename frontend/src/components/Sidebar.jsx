@@ -1,7 +1,15 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { Bell, Settings, LogOut, Bird } from 'lucide-react';
 
 const Sidebar = () => {
+    // Helper function to handle the active vs inactive wrapper classes
+    const navLinkClasses = ({ isActive }) =>
+        `flex items-center px-6 py-3 transition-all group border-l-4 ${isActive
+            ? 'bg-[#1A1D2D] text-white border-indigo-500'
+            : 'text-gray-400 hover:text-white hover:bg-[#1A1D2D] border-transparent'
+        }`;
+
     return (
         <div className="w-64 bg-[#0F111A] border-r border-gray-800/50 flex flex-col justify-between">
 
@@ -18,16 +26,24 @@ const Sidebar = () => {
             <nav className="flex-1 mt-6">
                 <ul className="space-y-2">
                     <li>
-                        <a href="#" className="flex items-center px-6 py-3 bg-[#1A1D2D] text-white border-l-4 border-indigo-500 group">
-                            <Bell size={18} className="mr-3 text-indigo-400" />
-                            <span className="font-medium">Alerts</span>
-                        </a>
+                        <NavLink to="/" className={navLinkClasses}>
+                            {({ isActive }) => (
+                                <>
+                                    <Bell size={18} className={`mr-3 ${isActive ? 'text-indigo-400' : ''}`} />
+                                    <span className="font-medium">Alerts</span>
+                                </>
+                            )}
+                        </NavLink>
                     </li>
                     <li>
-                        <a href="#" className="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-[#1A1D2D] transition-all group">
-                            <Settings size={18} className="mr-3 group-hover:rotate-45 transition-transform" />
-                            <span className="font-medium">Settings</span>
-                        </a>
+                        <NavLink to="/settings" className={navLinkClasses}>
+                            {({ isActive }) => (
+                                <>
+                                    <Settings size={18} className={`mr-3 group-hover:rotate-45 transition-transform ${isActive ? 'text-indigo-400' : ''}`} />
+                                    <span className="font-medium">Settings</span>
+                                </>
+                            )}
+                        </NavLink>
                     </li>
                 </ul>
             </nav>
