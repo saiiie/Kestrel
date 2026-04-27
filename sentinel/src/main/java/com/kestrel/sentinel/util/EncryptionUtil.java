@@ -35,7 +35,8 @@ public class EncryptionUtil {
             SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decryptedBytes = Base64.getDecoder().decode(encryptedText);
+            byte[] decodedBytes = Base64.getDecoder().decode(encryptedText);
+            byte[] decryptedBytes = cipher.doFinal(decodedBytes);
             return new String(decryptedBytes);
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting webhook", e);
