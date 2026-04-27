@@ -1,5 +1,6 @@
 package com.kestrel.sentinel.service;
 
+import com.kestrel.sentinel.util.EncryptionUtil;
 import com.kestrel.sentinel.model.AlertRule;
 import com.kestrel.sentinel.repository.AlertRuleRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,15 +19,18 @@ public class PricePollingEngine {
     private final AlertRuleRepository ruleRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     private final RabbitTemplate rabbitTemplate;
+    private final EncryptionUtil encryptionUtil;
 
     public PricePollingEngine(CryptoPriceService priceService,
             AlertRuleRepository ruleRepository,
             org.springframework.context.ApplicationEventPublisher eventPublisher,
-            RabbitTemplate rabbitTemplate) {
+            RabbitTemplate rabbitTemplate,
+            EncryptionUtil encryptionUtil) {
         this.priceService = priceService;
         this.ruleRepository = ruleRepository;
         this.eventPublisher = eventPublisher;
         this.rabbitTemplate = rabbitTemplate;
+        this.encryptionUtil = encryptionUtil;
     }
 
     @Scheduled(fixedDelay = 15000)
@@ -95,8 +99,11 @@ public class PricePollingEngine {
         ruleRepository.save(rule);
 
         // 3. Publish to RabbitMQ for Discord Webhook!
+        // 🔓 Decrypt the webhook URL before sending it to the dispatcher
+        String plainWebhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl());
+
         com.kestrel.sentinel.dto.AlertPayload payload = new com.kestrel.sentinel.dto.AlertPayload(
-                rule.getUser().getDiscordWebhookUrl(),
+                plainWebhook,
                 rule.getAssetId(),
                 rule.getConditionType(),
                 rule.getTargetPrice(),

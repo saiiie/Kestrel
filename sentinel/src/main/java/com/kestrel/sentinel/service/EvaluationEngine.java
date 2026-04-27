@@ -1,5 +1,6 @@
 package com.kestrel.sentinel.service;
 
+import com.kestrel.sentinel.util.EncryptionUtil;
 import com.kestrel.sentinel.dto.AlertPayload;
 import com.kestrel.sentinel.model.AlertRule;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,13 +19,16 @@ public class EvaluationEngine {
     private final MarketDataService marketDataService;
     private final AlertPublisherService publisherService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final EncryptionUtil encryptionUtil;
 
     public EvaluationEngine(AlertRuleService ruleService, MarketDataService marketDataService,
-            AlertPublisherService publisherService, org.springframework.context.ApplicationEventPublisher eventPublisher) {
+            AlertPublisherService publisherService, org.springframework.context.ApplicationEventPublisher eventPublisher,
+            EncryptionUtil encryptionUtil) {
         this.ruleService = ruleService;
         this.marketDataService = marketDataService;
         this.publisherService = publisherService;
         this.eventPublisher = eventPublisher;
+        this.encryptionUtil = encryptionUtil;
     }
 
     // This loop executes automatically every 30,000 milliseconds (30 seconds)
@@ -60,8 +64,11 @@ public class EvaluationEngine {
 
             // 5. STRIKE! 🦅
             if (thresholdCrossed) {
+                // 🔓 Decrypt the webhook URL before sending it to the dispatcher
+                String plainWebhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl());
+
                 AlertPayload payload = new AlertPayload(
-                        rule.getUser().getDiscordWebhookUrl(), // Grabs the user's specific Discord link!
+                        plainWebhook, // Grabs the user's specific Discord link!
                         rule.getAssetId(),
                         rule.getConditionType(),
                         rule.getTargetPrice(),

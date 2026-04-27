@@ -9,9 +9,21 @@ const AlertPipelineCard = ({ initialWebhook }) => {
         // TODO: Wire up backend test ping
     };
 
-    const handleSaveWebhook = () => {
-        console.log("Saving encrypted webhook to backend");
-        // TODO: Wire up PUT /api/users/1/webhook
+    const handleSaveWebhook = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/users/1/webhook', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ webhookUrl: webhook })
+            });
+
+            if (response.ok) {
+                console.log("✅ Webhook securely saved to NeonDB!");
+                // Optional: Add a small toast notification state here later!
+            }
+        } catch (error) {
+            console.error("❌ Failed to save webhook:", error);
+        }
     };
 
     return (

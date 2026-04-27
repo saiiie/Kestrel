@@ -97,6 +97,16 @@ app.put('/api/rules/:ruleId', async (req, res) => {
     }
 });
 
+// Update User Webhook
+app.put('/api/users/:userId/webhook', async (req, res) => {
+    try {
+        const response = await axios.put(`${SENTINEL_URL}/api/users/${req.params.userId}/webhook`, req.body);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to update webhook' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);
