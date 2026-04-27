@@ -29,7 +29,7 @@ public class PricePollingEngine {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 15000)
     public void evaluateRules() {
         List<AlertRule> activeRules = ruleRepository.findByIsActiveTrue();
 
