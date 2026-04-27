@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { renderAssetIcon, getConditionStyle } from '../utils/tableHelpers';
 import LiveTrackerCell from './LiveTrackerCell';
 
-const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onEditAlert, onDeleteAlert }) => {
+const AlertsTable = memo(({ rules, livePrices, onOpenNewAlert, onEditAlert, onDeleteAlert }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
 
@@ -152,6 +152,6 @@ const AlertsTable = ({ rules, livePrices, onOpenNewAlert, onEditAlert, onDeleteA
             </div>
         </div>
     );
-};
+});
 
 export default AlertsTable;

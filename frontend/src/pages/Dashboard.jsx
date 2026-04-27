@@ -64,6 +64,18 @@ const Dashboard = () => {
         fetchDashboardData();
     }, [userId]);
 
+    const fetchRules = async () => {
+        try {
+            const res = await fetch(`http://localhost:5000/api/rules/user/${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setRules(data);
+            }
+        } catch (error) {
+            console.error("❌ Failed to fetch rules:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchPrices = async () => {
             try {
@@ -76,16 +88,22 @@ const Dashboard = () => {
             }
         };
 
-        // Fetch immediately on load, then every 5 seconds
+        // Fetch immediately on load
         fetchPrices();
-        fetchHistory(); // 🌟 Also fetch history on interval!
-        const interval = setInterval(() => {
-            fetchPrices();
-            fetchHistory();
-        }, 5000);
+        fetchHistory();
+        fetchRules();
 
-        return () => clearInterval(interval); // Cleanup on unmount
-    }, []);
+        // Smart Polling: Fetch every 15s, but only if the tab is visible
+        const interval = setInterval(() => {
+            if (!document.hidden) {
+                fetchPrices();
+                fetchHistory();
+                fetchRules();
+            }
+        }, 15000);
+
+        return () => clearInterval(interval);
+    }, [userId]);
 
     const handleCreateAlert = async (newAlertData) => {
         try {
@@ -108,7 +126,7 @@ const Dashboard = () => {
                 // Add the new rule to the table instantly!
                 setRules([...rules, savedRule]);
                 setIsModalOpen(false); // Close the modal
-                
+
                 // 🌟 Trigger a history refresh so the card updates instantly!
                 fetchHistory();
             }
@@ -189,7 +207,7 @@ const Dashboard = () => {
                     Syncing with Kestrel Engine...
                 </div>
             ) : (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-8 animate-fade-in will-change-transform">
                     {/* Top Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-1">

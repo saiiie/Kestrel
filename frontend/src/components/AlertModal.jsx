@@ -1,27 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 
-const AlertModal = ({ isOpen, onClose, options, onSave, initialData }) => {
-    // State for our form inputs - Now initialized directly from props!
-    const [asset, setAsset] = useState(initialData ? initialData.assetId : '');
-    const [condition, setCondition] = useState(initialData ? initialData.conditionType : '');
-    const [price, setPrice] = useState(initialData ? initialData.targetPrice?.toString() : '');
-    const [isActive, setIsActive] = useState(initialData ? initialData.active : true);
+const AlertModal = memo(({ isOpen, onClose, options, onSave, initialData }) => {
+    // State for our form inputs
+    const [asset, setAsset] = useState('');
+    const [condition, setCondition] = useState('');
+    const [price, setPrice] = useState('');
+    const [isActive, setIsActive] = useState(true);
+
+    // Update internal state when initialData changes or modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setAsset(initialData ? initialData.assetId : '');
+            setCondition(initialData ? initialData.conditionType : '');
+            setPrice(initialData ? initialData.targetPrice?.toString() : '');
+            setIsActive(initialData ? initialData.active : true);
+        }
+    }, [isOpen, initialData]);
 
     if (!isOpen) return null;
     const isEditing = !!initialData;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-fade-in will-change-transform">
 
             {/* Modal Container */}
-            <div className="bg-[#141621] w-full max-w-md rounded-xl border border-gray-800 shadow-2xl overflow-hidden">
+            <div className="bg-[#141621] w-full max-w-md rounded-xl border border-gray-800 shadow-2xl overflow-hidden animate-slide-up">
 
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b border-gray-800/60">
                     <h3 className="text-white font-semibold tracking-wide">Asset Alert</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white transition-colors"
+                        className="text-gray-400 hover:text-white transition-colors p-1"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -89,7 +99,6 @@ const AlertModal = ({ isOpen, onClose, options, onSave, initialData }) => {
                             Status
                         </label>
                         <div className="flex items-center space-x-3">
-                            {/* Custom Toggle Switch */}
                             <button
                                 onClick={() => setIsActive(!isActive)}
                                 className={`w-10 h-5 rounded-full flex items-center px-1 transition-colors ${isActive ? 'bg-indigo-500' : 'bg-gray-600'}`}
@@ -121,6 +130,6 @@ const AlertModal = ({ isOpen, onClose, options, onSave, initialData }) => {
             </div>
         </div>
     );
-};
+});
 
 export default AlertModal;

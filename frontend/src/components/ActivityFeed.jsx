@@ -1,7 +1,7 @@
-import React from 'react';
-import { renderAssetIcon } from '../utils/tableHelpers'; // 🌟 Reuse our beautiful icons!
+import React, { memo } from 'react';
+import { renderAssetIcon } from '../utils/tableHelpers';
 
-const ActivityFeed = ({ history, onClearHistory }) => {
+const ActivityFeed = memo(({ history, onClearHistory }) => {
 
     // A quick helper to turn timestamps into "2 mins ago" or "1 hour ago"
     const getRelativeTime = (dateString) => {
@@ -61,6 +61,6 @@ const ActivityFeed = ({ history, onClearHistory }) => {
             </div>
         </div>
     );
-};
+});
 
 export default ActivityFeed;

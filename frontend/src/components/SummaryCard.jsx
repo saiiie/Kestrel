@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-// Accept the 'rules' prop we just passed down from Dashboard
-const SummaryCard = ({ rules }) => {
+const SummaryCard = memo(({ rules }) => {
     // Calculate dynamic stats based on your NeonDB data
     const totalAlerts = rules.length;
     const activeAlerts = rules.filter(rule => rule.active).length;
@@ -31,6 +30,6 @@ const SummaryCard = ({ rules }) => {
             </div>
         </div>
     );
-};
+});
 
 export default SummaryCard;
