@@ -28,7 +28,13 @@ async function startDispatcher() {
                     console.log('📦 Raw message received:', rawContent);
                     
                     const payload = JSON.parse(rawContent);
-                    console.log('📝 Parsed payload:', payload);
+                    console.log('📝 Parsed payload:', JSON.stringify(payload, null, 2));
+                    
+                    if (!payload.discordWebhookUrl) {
+                        console.error('❌ CRITICAL: No discordWebhookUrl found in payload!');
+                    } else {
+                        console.log(`🔗 Webhook URL (masked): ${payload.discordWebhookUrl.substring(0, 30)}... (Length: ${payload.discordWebhookUrl.length})`);
+                    }
                     
                     console.log(`\n🚨 Alert received for ${payload.assetId}! Dispatching to Discord...`);
 
@@ -56,9 +62,19 @@ async function sendDiscordAlert(payload) {
     // Destructure the payload from our Java DTO
     const { discordWebhookUrl, assetId, conditionType, targetPrice, currentLivePrice } = payload;
 
-    // Determine the color based on the condition (Red for drops, Green for rises)
-    const embedColor = conditionType === 'DROPS_BELOW' ? 16711680 : 65280;
-    const actionText = conditionType === 'DROPS_BELOW' ? 'dropped below' : 'surged above';
+    // Determine the color based on the condition (Red for drops, Green for rises, Blue for tests)
+    let embedColor, actionText, title, description;
+
+    if (conditionType === 'TEST_CONNECTION') {
+        embedColor = 3447003; // Nice Blue
+        title = "🔗 Kestrel Connection Test";
+        description = "Success! Your Kestrel Sentinel is now properly linked to this Discord channel. Critical market alerts will be dispatched here.";
+    } else {
+        embedColor = conditionType === 'DROPS_BELOW' ? 16711680 : 65280;
+        actionText = conditionType === 'DROPS_BELOW' ? 'dropped below' : 'surged above';
+        title = `🚨 Market Alert: ${assetId.toUpperCase()}`;
+        description = `Your automated rule has been triggered! **${assetId}** has ${actionText} your target.`;
+    }
 
     // Build a rich Discord Embed
     const discordMessage = {
@@ -66,10 +82,10 @@ async function sendDiscordAlert(payload) {
         avatar_url: "https://i.imgur.com/rNfL8Gq.png", // A cool hawk icon!
         embeds: [
             {
-                title: `🚨 Market Alert: ${assetId.toUpperCase()}`,
-                description: `Your automated rule has been triggered! **${assetId}** has ${actionText} your target.`,
+                title: title,
+                description: description,
                 color: embedColor,
-                fields: [
+                fields: conditionType === 'TEST_CONNECTION' ? [] : [
                     { name: "Target Price", value: `$${targetPrice.toLocaleString()}`, inline: true },
                     { name: "Live Price", value: `$${currentLivePrice.toLocaleString()}`, inline: true }
                 ],

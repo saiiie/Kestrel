@@ -65,7 +65,7 @@ public class EvaluationEngine {
             // 5. STRIKE! 🦅
             if (thresholdCrossed) {
                 // 🔓 Decrypt the webhook URL before sending it to the dispatcher
-                String plainWebhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl());
+                String plainWebhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl()).trim();
 
                 AlertPayload payload = new AlertPayload(
                         plainWebhook, // Grabs the user's specific Discord link!

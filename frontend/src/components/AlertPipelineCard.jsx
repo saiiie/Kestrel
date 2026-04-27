@@ -3,10 +3,30 @@ import React, { useState } from 'react';
 const AlertPipelineCard = ({ initialWebhook }) => {
     const [webhook, setWebhook] = useState(initialWebhook);
     const [isMasked, setIsMasked] = useState(true);
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    const handleTestConnection = () => {
-        console.log("Testing connection to:", webhook);
-        // TODO: Wire up backend test ping
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+    };
+
+    const handleTestConnection = async () => {
+        try {
+            console.log("🧪 Testing connection to:", webhook);
+            const response = await fetch('http://localhost:5000/api/users/test-webhook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ webhookUrl: webhook })
+            });
+
+            if (response.ok) {
+                showToast('A test alert has been sent to your private Discord channel', 'test');
+            } else {
+                showToast('Failed to reach Discord. Check your URL.', 'error');
+            }
+        } catch (error) {
+            showToast('Network error while testing connection.', 'error');
+        }
     };
 
     const handleSaveWebhook = async () => {
@@ -18,11 +38,12 @@ const AlertPipelineCard = ({ initialWebhook }) => {
             });
 
             if (response.ok) {
-                console.log("✅ Webhook securely saved to NeonDB!");
-                // Optional: Add a small toast notification state here later!
+                showToast('Configured webhook URL successfully!', 'success');
+            } else {
+                showToast('Failed to save webhook to database.', 'error');
             }
         } catch (error) {
-            console.error("❌ Failed to save webhook:", error);
+            showToast('Network error while saving webhook.', 'error');
         }
     };
 
@@ -72,6 +93,22 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                     >
                         Save Webhook
                     </button>
+                </div>
+
+                {/* Inline Notification */}
+                <div className="h-10 mt-2 flex items-center">
+                    {toast.show && (
+                        <div className={`flex items-center animate-in fade-in slide-in-from-left-2 duration-300 ${
+                            toast.type === 'success' ? 'text-emerald-400' :
+                            toast.type === 'test' ? 'text-indigo-400' :
+                            'text-rose-400'
+                        }`}>
+                            {toast.type === 'success' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
+                            {toast.type === 'test' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
+                            {toast.type === 'error' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                            <span className="text-xs font-medium italic">{toast.message}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

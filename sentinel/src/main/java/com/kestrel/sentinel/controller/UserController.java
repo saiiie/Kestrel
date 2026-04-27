@@ -14,10 +14,42 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final EncryptionUtil encryptionUtil;
+    private final com.kestrel.sentinel.service.AlertPublisherService alertPublisherService;
 
-    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil) {
+    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil, com.kestrel.sentinel.service.AlertPublisherService alertPublisherService) {
         this.userRepository = userRepository;
         this.encryptionUtil = encryptionUtil;
+        this.alertPublisherService = alertPublisherService;
+    }
+
+    @PostMapping("/test-webhook")
+    public ResponseEntity<?> testWebhook(@RequestBody Map<String, String> body) {
+        String webhookUrl = body.get("webhookUrl");
+        if (webhookUrl == null || webhookUrl.isEmpty()) {
+            return ResponseEntity.badRequest().body("webhookUrl is required");
+        }
+
+        // 🛡️ Trim to remove any accidental whitespace from copy-paste
+        webhookUrl = webhookUrl.trim();
+
+        // 🛡️ Even for a test, we follow the encryption pattern
+        String encryptedWebhook = encryptionUtil.encrypt(webhookUrl);
+        
+        // 🔓 Decrypt it back for the payload (simulating the real alert flow)
+        String plainWebhook = encryptionUtil.decrypt(encryptedWebhook).trim();
+
+        System.out.println("🧪 DEBUG: Decrypted webhook (masked): " + plainWebhook.substring(0, 20) + "...");
+
+        com.kestrel.sentinel.dto.AlertPayload payload = new com.kestrel.sentinel.dto.AlertPayload(
+                plainWebhook,
+                "TEST_ASSET",
+                "TEST_CONNECTION",
+                java.math.BigDecimal.ZERO,
+                java.math.BigDecimal.ZERO
+        );
+
+        alertPublisherService.publishAlert(payload);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{userId}/webhook")
@@ -29,7 +61,7 @@ public class UserController {
 
         return userRepository.findById(userId).map(user -> {
             // 🛡️ Encrypt the webhook before saving to the database
-            String encryptedWebhook = encryptionUtil.encrypt(webhookUrl);
+            String encryptedWebhook = encryptionUtil.encrypt(webhookUrl.trim());
             user.setDiscordWebhookUrl(encryptedWebhook);
             userRepository.save(user);
             

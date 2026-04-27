@@ -107,6 +107,16 @@ app.put('/api/users/:userId/webhook', async (req, res) => {
     }
 });
 
+// Test User Webhook
+app.post('/api/users/test-webhook', async (req, res) => {
+    try {
+        const response = await axios.post(`${SENTINEL_URL}/api/users/test-webhook`, req.body);
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json({ error: 'Failed to test webhook' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);
