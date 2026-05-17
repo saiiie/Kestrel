@@ -4,6 +4,8 @@ import SummaryCard from '../components/SummaryCard';
 import ActivityFeed from '../components/ActivityFeed';
 import AlertsTable from '../components/AlertsTable';
 import AlertModal from '../components/AlertModal';
+import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 
 const Dashboard = () => {
     const [rules, setRules] = useState([]);
@@ -14,11 +16,13 @@ const Dashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRule, setEditingRule] = useState(null);
 
-    const userId = 1;
+    const { user } = useAuth();
+    const userId = user?.id;
 
     const fetchHistory = async () => {
+        if (!userId) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/history/user/${userId}`);
+            const res = await apiFetch(`http://localhost:5000/api/history/user/${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 console.log("📜 Latest Activity History:", data);
@@ -34,8 +38,9 @@ const Dashboard = () => {
             try {
                 // Fetch each with individual error handling to avoid one crash blocking everything
                 const fetchWithLogs = async (url, setter, label) => {
+                    if (!userId && url.includes('user/')) return;
                     try {
-                        const res = await fetch(url);
+                        const res = await apiFetch(url);
                         if (res.ok) {
                             const data = await res.json();
                             console.log(`✅ ${label} Data:`, data);
@@ -65,8 +70,9 @@ const Dashboard = () => {
     }, [userId]);
 
     const fetchRules = async () => {
+        if (!userId) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/rules/user/${userId}`);
+            const res = await apiFetch(`http://localhost:5000/api/rules/user/${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 setRules(data);
@@ -79,7 +85,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchPrices = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/prices/live');
+                const res = await apiFetch('http://localhost:5000/api/prices/live');
                 if (res.ok) {
                     setLivePrices(await res.json());
                 }
@@ -115,9 +121,8 @@ const Dashboard = () => {
                 active: newAlertData.isActive
             };
 
-            const response = await fetch('http://localhost:5000/api/rules', {
+            const response = await apiFetch('http://localhost:5000/api/rules', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
@@ -145,9 +150,8 @@ const Dashboard = () => {
                 active: updatedData.isActive
             };
 
-            const response = await fetch(`http://localhost:5000/api/rules/${updatedData.id}`, {
+            const response = await apiFetch(`http://localhost:5000/api/rules/${updatedData.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
@@ -165,7 +169,7 @@ const Dashboard = () => {
 
     const handleDeleteAlert = async (ruleId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/rules/${ruleId}`, {
+            const response = await apiFetch(`http://localhost:5000/api/rules/${ruleId}`, {
                 method: 'DELETE',
             });
 
@@ -185,7 +189,7 @@ const Dashboard = () => {
 
     const handleClearHistory = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/history/user/${userId}`, {
+            const response = await apiFetch(`http://localhost:5000/api/history/user/${userId}`, {
                 method: 'DELETE',
             });
 

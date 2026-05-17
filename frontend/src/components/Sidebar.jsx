@@ -1,8 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Bell, Settings, LogOut, Bird } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
+    const { logout } = useAuth();
     // Helper function to handle the active vs inactive wrapper classes
     const navLinkClasses = ({ isActive }) =>
         `flex items-center px-6 py-3 transition-all group border-l-4 ${isActive
@@ -50,7 +52,10 @@ const Sidebar = () => {
 
             {/* Log Out */}
             <div className="p-6 mb-4">
-                <button className="flex items-center text-gray-400 hover:text-red-400 transition-colors group">
+                <button 
+                    onClick={logout}
+                    className="flex items-center text-gray-400 hover:text-red-400 transition-colors group"
+                >
                     <LogOut size={18} className="mr-3 group-hover:-translate-x-1 transition-transform" />
                     <span className="font-medium">Log Out</span>
                 </button>

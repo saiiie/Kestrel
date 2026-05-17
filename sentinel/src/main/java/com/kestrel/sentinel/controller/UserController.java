@@ -69,4 +69,24 @@ public class UserController {
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
+        return userRepository.findById(userId).map(user -> {
+            String plainWebhook = "";
+            if (user.getDiscordWebhookUrl() != null && !user.getDiscordWebhookUrl().isEmpty()) {
+                try {
+                    plainWebhook = encryptionUtil.decrypt(user.getDiscordWebhookUrl()).trim();
+                } catch (Exception e) {
+                    System.err.println("Failed to decrypt webhook for user " + userId + ": " + e.getMessage());
+                }
+            }
+            return ResponseEntity.ok(Map.of(
+                    "id", user.getId(),
+                    "username", user.getUsername(),
+                    "email", user.getEmail(),
+                    "discordWebhookUrl", plainWebhook
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

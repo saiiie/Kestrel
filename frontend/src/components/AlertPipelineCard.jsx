@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const AlertPipelineCard = ({ initialWebhook }) => {
-    const [webhook, setWebhook] = useState(initialWebhook);
+    const { user, updateUser } = useAuth();
+    const userId = user?.id;
+    const [webhook, setWebhook] = useState(initialWebhook || '');
     const [isMasked, setIsMasked] = useState(true);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+    // Sync input field value when fresh webhook is loaded asynchronously
+    useEffect(() => {
+        if (initialWebhook) {
+            setWebhook(initialWebhook);
+        }
+    }, [initialWebhook]);
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -13,9 +24,8 @@ const AlertPipelineCard = ({ initialWebhook }) => {
     const handleTestConnection = async () => {
         try {
             console.log("🧪 Testing connection to:", webhook);
-            const response = await fetch('http://localhost:5000/api/users/test-webhook', {
+            const response = await apiFetch('http://localhost:5000/api/users/test-webhook', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ webhookUrl: webhook })
             });
 
@@ -30,15 +40,16 @@ const AlertPipelineCard = ({ initialWebhook }) => {
     };
 
     const handleSaveWebhook = async () => {
+        if (!userId) return;
         try {
-            const response = await fetch('http://localhost:5000/api/users/1/webhook', {
+            const response = await apiFetch(`http://localhost:5000/api/users/${userId}/webhook`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ webhookUrl: webhook })
             });
 
             if (response.ok) {
                 showToast('Configured webhook URL successfully!', 'success');
+                updateUser({ discordWebhookUrl: webhook }); // Sync local user state immediately!
             } else {
                 showToast('Failed to save webhook to database.', 'error');
             }

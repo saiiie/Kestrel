@@ -8,10 +8,17 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JWTFilter jwtFilter;
+
+    public SecurityConfig(JWTFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     // Tells Spring Boot how to safely hash passwords
     @Bean
@@ -29,9 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/prices/live").permitAll() // UNLOCKED: Public prices
                         .anyRequest().authenticated() // LOCKED: Everything else requires a Token!
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Don't use
-                                                                                                         // cookies, use
-                                                                                                         // JWTs
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Don't use cookies, use JWTs
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

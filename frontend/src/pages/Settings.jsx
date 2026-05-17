@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ProfileSettingsCard from '../components/ProfileSettingsCard';
 import AlertPipelineCard from '../components/AlertPipelineCard';
 import SecurityCard from '../components/SecurityCard';
+import { useAuth } from '../context/AuthContext';
 
 const Settings = () => {
-    // Mocking the initial fetch from your hardcoded userId = 1
-    const [userData, setUserData] = useState({
-        username: 'Commander_Zero',
-        email: 'cmd.zero@celestial.obs',
-        discordWebhook: 'https://discord.com/api/webhooks/123456789/abcdefg'
-    });
+    const { user } = useAuth();
+
+    const userData = {
+        username: user?.username || 'Commander',
+        email: user?.email || 'Unknown',
+        discordWebhook: user?.discordWebhookUrl || ''
+    };
 
     return (
         <DashboardLayout>

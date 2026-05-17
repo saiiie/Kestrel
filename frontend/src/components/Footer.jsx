@@ -16,13 +16,6 @@ const Footer = () => {
                         © {currentYear} Celestial Systems. All rights reserved.
                     </span>
                 </div>
-
-                {/* Tagline */}
-                <div className="mt-4 md:mt-0">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">
-                        Strike when it matters.
-                    </p>
-                </div>
             </div>
         </footer>
     );
