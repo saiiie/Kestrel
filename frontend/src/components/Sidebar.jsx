@@ -56,7 +56,7 @@ const Sidebar = () => {
                     onClick={logout}
                     className="flex items-center text-gray-400 hover:text-red-400 transition-colors group"
                 >
-                    <LogOut size={18} className="mr-3 group-hover:-translate-x-1 transition-transform" />
+                    <LogOut size={18} className="mr-3" />
                     <span className="font-medium">Log Out</span>
                 </button>
             </div>

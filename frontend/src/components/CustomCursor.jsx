@@ -42,7 +42,7 @@ const CustomCursor = memo(() => {
             className="fixed top-0 left-0 w-10 h-10 border border-indigo-500/40 rounded-full pointer-events-none z-[9999] flex items-center justify-center will-change-transform"
             style={{ transform: 'translate3d(-100px, -100px, 0)' }}
         >
-            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_#6366f1]"></div>
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_#011e9f]"></div>
         </div>
     );
 });

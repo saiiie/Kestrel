@@ -100,7 +100,7 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                     </button>
                     <button
                         onClick={handleSaveWebhook}
-                        className="px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
+                        className="px-8 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
                     >
                         Save Webhook
                     </button>

@@ -2,6 +2,9 @@
 
 @theme {
   --font-sans: 'JetBrains Mono', monospace;
+  --color-indigo-400: #3b5eff;
+  --color-indigo-500: #011e9f;
+  --color-indigo-600: #001366;
 }
 
 body {
