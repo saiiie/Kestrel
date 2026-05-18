@@ -151,6 +151,36 @@ app.post('/api/users/test-webhook', async (req, res) => {
     }
 });
 
+// Update User Profile
+app.put('/api/users/:userId/profile', async (req, res) => {
+    try {
+        const response = await axios.put(`${SENTINEL_URL}/api/users/${req.params.userId}/profile`, req.body, { headers: getHeaders(req) });
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to update profile' });
+    }
+});
+
+// Update User Password
+app.put('/api/users/:userId/password', async (req, res) => {
+    try {
+        const response = await axios.put(`${SENTINEL_URL}/api/users/${req.params.userId}/password`, req.body, { headers: getHeaders(req) });
+        res.json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to update password' });
+    }
+});
+
+// Delete User Account
+app.delete('/api/users/:userId', async (req, res) => {
+    try {
+        const response = await axios.delete(`${SENTINEL_URL}/api/users/${req.params.userId}`, { headers: getHeaders(req) });
+        res.status(response.status).send();
+    } catch (error) {
+        res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to delete account' });
+    }
+});
+
 // Start the Gateway
 app.listen(PORT, () => {
     console.log(`🔀 Kestrel API Gateway is listening on port ${PORT}`);

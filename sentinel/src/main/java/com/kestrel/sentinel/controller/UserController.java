@@ -15,11 +15,13 @@ public class UserController {
     private final UserRepository userRepository;
     private final EncryptionUtil encryptionUtil;
     private final com.kestrel.sentinel.service.AlertPublisherService alertPublisherService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil, com.kestrel.sentinel.service.AlertPublisherService alertPublisherService) {
+    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil, com.kestrel.sentinel.service.AlertPublisherService alertPublisherService, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.encryptionUtil = encryptionUtil;
         this.alertPublisherService = alertPublisherService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/test-webhook")
@@ -88,5 +90,62 @@ public class UserController {
                     "discordWebhookUrl", plainWebhook
             ));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{userId}/profile")
+    public ResponseEntity<?> updateProfile(@PathVariable Long userId, @RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String email = body.get("email");
+
+        if (username == null || email == null || username.trim().isEmpty() || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and email are required"));
+        }
+
+        return userRepository.findById(userId).map(user -> {
+            user.setUsername(username.trim());
+            user.setEmail(email.trim());
+            try {
+                userRepository.save(user);
+                return ResponseEntity.ok(Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail()
+                ));
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Username or email already exists"));
+            }
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<?> updatePassword(@PathVariable Long userId, @RequestBody Map<String, String> body) {
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+
+        if (oldPassword == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Old and new passwords are required"));
+        }
+
+        return userRepository.findById(userId).map(user -> {
+            if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Incorrect old password"));
+            }
+            if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "New password cannot be the same as the old password"));
+            }
+
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteAccount(@PathVariable Long userId) {
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.deleteById(userId);
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
     }
 }
