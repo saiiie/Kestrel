@@ -20,7 +20,7 @@ export const getConditionStyle = (type, price) => {
         return {
             text: `Drops Below ${formatCurrency(price)}`,
             icon: '📉',
-            classes: 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+            classes: 'bg-gray-700/30 border-gray-600/50 text-gray-300'
         };
     } else if (type === 'RISES_ABOVE') {
         return {
@@ -32,6 +32,6 @@ export const getConditionStyle = (type, price) => {
     return {
         text: `Deviation ${formatCurrency(price)}`,
         icon: '⚠️',
-        classes: 'bg-pink-500/10 border-pink-500/20 text-pink-400'
+        classes: 'bg-gray-700/30 border-gray-600/50 text-gray-300'
     };
 };

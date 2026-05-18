@@ -16,12 +16,16 @@ public class UserController {
     private final EncryptionUtil encryptionUtil;
     private final com.kestrel.sentinel.service.AlertPublisherService alertPublisherService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final com.kestrel.sentinel.repository.AlertRuleRepository alertRuleRepository;
+    private final com.kestrel.sentinel.repository.AlertHistoryRepository alertHistoryRepository;
 
-    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil, com.kestrel.sentinel.service.AlertPublisherService alertPublisherService, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, EncryptionUtil encryptionUtil, com.kestrel.sentinel.service.AlertPublisherService alertPublisherService, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder, com.kestrel.sentinel.repository.AlertRuleRepository alertRuleRepository, com.kestrel.sentinel.repository.AlertHistoryRepository alertHistoryRepository) {
         this.userRepository = userRepository;
         this.encryptionUtil = encryptionUtil;
         this.alertPublisherService = alertPublisherService;
         this.passwordEncoder = passwordEncoder;
+        this.alertRuleRepository = alertRuleRepository;
+        this.alertHistoryRepository = alertHistoryRepository;
     }
 
     @PostMapping("/test-webhook")
@@ -140,11 +144,17 @@ public class UserController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> deleteAccount(@PathVariable Long userId) {
         if (!userRepository.existsById(userId)) {
             return ResponseEntity.notFound().build();
         }
+        
+        // Clean up all associated alert rules and alert history to prevent orphaned records
+        alertRuleRepository.deleteAll(alertRuleRepository.findByUserId(userId));
+        alertHistoryRepository.deleteAll(alertHistoryRepository.findByUserId(userId));
+        
         userRepository.deleteById(userId);
         return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
     }
