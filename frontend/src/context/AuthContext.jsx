@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
             setToken(data.token);
             setUser(data.user);
             localStorage.setItem('user', JSON.stringify(data.user));
-            navigate('/');
+            navigate('/dashboard');
             return true;
         } else {
             throw new Error(data.error || 'Login failed');
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
             setToken(data.token);
             setUser(data.user);
             localStorage.setItem('user', JSON.stringify(data.user));
-            navigate('/');
+            navigate('/dashboard');
             return true;
         } else {
             throw new Error(data.error || 'Registration failed');
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         setToken(null);
         setUser(null);
-        navigate('/login');
+        navigate('/');
     };
 
     const updateUser = (newUserFields) => {

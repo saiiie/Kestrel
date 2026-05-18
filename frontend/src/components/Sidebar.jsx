@@ -28,7 +28,7 @@ const Sidebar = () => {
             <nav className="flex-1 mt-6">
                 <ul className="space-y-2">
                     <li>
-                        <NavLink to="/" className={navLinkClasses}>
+                        <NavLink to="/dashboard" className={navLinkClasses}>
                             {({ isActive }) => (
                                 <>
                                     <Bell size={18} className={`mr-3 ${isActive ? 'text-indigo-400' : ''}`} />
