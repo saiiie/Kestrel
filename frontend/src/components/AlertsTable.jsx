@@ -1,15 +1,43 @@
-import React, { useState, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { renderAssetIcon, getConditionStyle } from '../utils/tableHelpers';
 import LiveTrackerCell from './LiveTrackerCell';
 
 const AlertsTable = memo(({ rules, livePrices, onOpenNewAlert, onEditAlert, onDeleteAlert }) => {
     const [currentPage, setCurrentPage] = useState(1);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filterStatus, setFilterStatus] = useState('ALL'); // 'ALL', 'ACTIVE', 'PAUSED'
+    const [filterAsset, setFilterAsset] = useState('ALL');
+    const filterRef = useRef(null);
+
     const itemsPerPage = 6;
 
-    // Pagination calculations
-    const totalPages = Math.ceil(rules.length / itemsPerPage);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const uniqueAssets = Array.from(new Set(rules.map(r => r.assetId)));
+
+    const filteredRules = rules.filter(r => {
+        const matchStatus = filterStatus === 'ALL' || (filterStatus === 'ACTIVE' && r.active) || (filterStatus === 'PAUSED' && !r.active);
+        const matchAsset = filterAsset === 'ALL' || r.assetId === filterAsset;
+        return matchStatus && matchAsset;
+    });
+
+    // Reset to page 1 if filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterStatus, filterAsset]);
+
+    // Pagination calculations based on FILTERED rules
+    const totalPages = Math.ceil(filteredRules.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentRules = rules.slice(startIndex, startIndex + itemsPerPage);
+    const currentRules = filteredRules.slice(startIndex, startIndex + itemsPerPage);
 
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
@@ -22,11 +50,60 @@ const AlertsTable = memo(({ rules, livePrices, onOpenNewAlert, onEditAlert, onDe
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-white tracking-wide">Configured Alerts</h2>
                 <div className="flex space-x-3">
-                    <button className="px-4 py-2 bg-[#1A1D2D] hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 flex items-center transition-colors">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                        Filter
-                    </button>
-                    <button onClick={onOpenNewAlert} className="px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold flex items-center transition-transform active:scale-95">
+                    <div className="relative" ref={filterRef}>
+                        <button 
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            className="cursor-pointer px-4 py-2 bg-[#1A1D2D] hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 flex items-center transition-colors"
+                        >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                            Filter
+                            {(filterStatus !== 'ALL' || filterAsset !== 'ALL') && (
+                                <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                            )}
+                        </button>
+                        
+                        {isFilterOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-[#0F111A] border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+                                <div className="p-3">
+                                    <div className="mb-3">
+                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status</h3>
+                                        <div className="flex flex-col space-y-1">
+                                            {['ALL', 'ACTIVE', 'PAUSED'].map(status => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => setFilterStatus(status)}
+                                                    className={`cursor-pointer text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${filterStatus === status ? 'bg-[#1A1D2D] text-white font-medium' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-300'}`}
+                                                >
+                                                    {status.charAt(0) + status.slice(1).toLowerCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Asset</h3>
+                                        <div className="flex flex-col space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
+                                            <button
+                                                onClick={() => setFilterAsset('ALL')}
+                                                className={`cursor-pointer text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${filterAsset === 'ALL' ? 'bg-[#1A1D2D] text-white font-medium' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-300'}`}
+                                            >
+                                                All Assets
+                                            </button>
+                                            {uniqueAssets.map(asset => (
+                                                <button
+                                                    key={asset}
+                                                    onClick={() => setFilterAsset(asset)}
+                                                    className={`cursor-pointer text-left px-3 py-1.5 rounded-lg text-sm transition-colors capitalize ${filterAsset === asset ? 'bg-[#1A1D2D] text-white font-medium' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-300'}`}
+                                                >
+                                                    {asset}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <button onClick={onOpenNewAlert} className="cursor-pointer px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold flex items-center transition-transform active:scale-95">
                         + New Alert
                     </button>
                 </div>

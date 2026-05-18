@@ -13,15 +13,25 @@ public class AlertRuleService {
 
     private final AlertRuleRepository alertRuleRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final CryptoPriceService cryptoPriceService;
 
-    public AlertRuleService(AlertRuleRepository alertRuleRepository, org.springframework.context.ApplicationEventPublisher eventPublisher) {
+    public AlertRuleService(AlertRuleRepository alertRuleRepository, org.springframework.context.ApplicationEventPublisher eventPublisher, CryptoPriceService cryptoPriceService) {
         this.alertRuleRepository = alertRuleRepository;
         this.eventPublisher = eventPublisher;
+        this.cryptoPriceService = cryptoPriceService;
     }
 
     // 1. Create or Update a rule
     public AlertRule saveRule(AlertRule rule) {
         boolean isNew = rule.getId() == null;
+        
+        if (isNew) {
+            java.util.Map<String, Double> prices = cryptoPriceService.fetchLivePrices();
+            if (prices != null && prices.containsKey(rule.getAssetId())) {
+                rule.setBaselinePrice(java.math.BigDecimal.valueOf(prices.get(rule.getAssetId())));
+            }
+        }
+        
         AlertRule savedRule = alertRuleRepository.save(rule);
         
         if (isNew) {
@@ -65,6 +75,12 @@ public class AlertRuleService {
             existingRule.setConditionType(updatedData.getConditionType());
             existingRule.setTargetPrice(updatedData.getTargetPrice());
             existingRule.setActive(updatedData.isActive());
+            
+            java.util.Map<String, Double> prices = cryptoPriceService.fetchLivePrices();
+            if (prices != null && prices.containsKey(updatedData.getAssetId())) {
+                existingRule.setBaselinePrice(java.math.BigDecimal.valueOf(prices.get(updatedData.getAssetId())));
+            }
+
             return alertRuleRepository.save(existingRule);
         }).orElseThrow(() -> new RuntimeException("Rule not found with id " + id));
     }

@@ -8,6 +8,7 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { register } = useAuth();
@@ -26,10 +27,15 @@ const Register = () => {
             return;
         }
 
+        if (password !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
         setIsLoading(true);
         try {
             // Mapping Full Name to Username for backend
-            await register(name, email, password);
+            await register(name, email, password, confirmPassword);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -51,11 +57,7 @@ const Register = () => {
                 <div className="w-full max-w-md bg-[#11131C] rounded-2xl border border-gray-800 p-8 shadow-2xl">
                     <h2 className="text-xl font-semibold text-white mb-6">Create Account</h2>
 
-                    {error && (
-                        <div className="bg-rose-500/10 border border-rose-500/50 text-rose-400 text-sm p-3 rounded-lg mb-6">
-                            {error}
-                        </div>
-                    )}
+
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
@@ -92,14 +94,33 @@ const Register = () => {
                                 placeholder="••••••••"
                                 required
                             />
-                            <p className="text-[10px] text-gray-500 mt-2">Must be at least 7 characters long.</p>
+                            <p className="text-[10px] text-gray-500 mt-2 mb-4">Must be at least 7 characters long.</p>
                         </div>
 
-                        <div className="pt-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-2">Confirm Password</label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full bg-[#05050A] border border-gray-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors tracking-widest"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <div className="mb-2 h-4 flex items-end justify-start">
+                                {error && (
+                                    <span className="text-rose-400 text-[10px] italic text-left">
+                                        {error}
+                                    </span>
+                                )}
+                            </div>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-white hover:bg-gray-100 text-black font-semibold rounded-lg py-3 text-sm transition-colors flex justify-center items-center space-x-2"
+                                className="cursor-pointer w-full bg-white hover:bg-gray-100 text-black font-semibold rounded-lg py-3 text-sm transition-colors flex justify-center items-center space-x-2"
                             >
                                 {isLoading ? (
                                     <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

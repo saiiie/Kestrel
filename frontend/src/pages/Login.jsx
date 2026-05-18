@@ -44,11 +44,7 @@ const Login = () => {
                 <div className="w-full max-w-md bg-[#11131C] rounded-2xl border border-gray-800 p-8 shadow-2xl">
                     <h2 className="text-xl font-semibold text-white mb-6">Log In</h2>
 
-                    {error && (
-                        <div className="bg-rose-500/10 border border-rose-500/50 text-rose-400 text-sm p-3 rounded-lg mb-6">
-                            {error}
-                        </div>
-                    )}
+
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
@@ -78,11 +74,19 @@ const Login = () => {
                             />
                         </div>
 
-                        <div className="pt-4">
+                        <div>
+                            <div className="mb-2 h-4 flex items-end justify-start">
+                                {error && (
+                                    <span className="text-rose-400 text-[10px] italic text-left">
+                                        {error}
+                                    </span>
+                                )}
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-white hover:bg-gray-100 text-black font-semibold rounded-lg py-3 text-sm transition-colors flex justify-center items-center"
+                                className="cursor-pointer w-full bg-white hover:bg-gray-100 text-black font-semibold rounded-lg py-3 text-sm transition-colors flex justify-center items-center"
                             >
                                 {isLoading ? (
                                     <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

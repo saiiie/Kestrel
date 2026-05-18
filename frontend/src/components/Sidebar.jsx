@@ -54,7 +54,7 @@ const Sidebar = () => {
             <div className="p-6 mb-4">
                 <button 
                     onClick={logout}
-                    className="flex items-center text-sm text-gray-400 hover:text-red-400 transition-colors group"
+                    className="cursor-pointer flex items-center text-sm text-gray-400 hover:text-red-400 transition-colors group"
                 >
                     <LogOut size={18} className="mr-3" />
                     <span className="font-medium">Log Out</span>

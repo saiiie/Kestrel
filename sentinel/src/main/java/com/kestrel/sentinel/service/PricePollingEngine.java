@@ -68,7 +68,17 @@ public class PricePollingEngine {
         return switch (rule.getConditionType()) {
             case "DROPS_BELOW" -> current.compareTo(target) < 0;
             case "RISES_ABOVE" -> current.compareTo(target) > 0;
-            case "DEVIATES" -> current.subtract(target).abs().compareTo(BigDecimal.valueOf(0.05)) > 0;
+            case "DEVIATES" -> {
+                BigDecimal baseline = rule.getBaselinePrice();
+                if (baseline == null) {
+                    // Fallback for older alerts: save current price as baseline and skip this evaluation cycle
+                    rule.setBaselinePrice(current);
+                    ruleRepository.save(rule);
+                    yield false;
+                }
+                // Check if absolute difference between live price and baseline is greater than target (threshold)
+                yield current.subtract(baseline).abs().compareTo(target) > 0;
+            }
             default -> false;
         };
     }

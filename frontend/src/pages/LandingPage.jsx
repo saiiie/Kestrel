@@ -282,7 +282,7 @@ const LandingPage = () => {
                             Built for<br />precision.<br />Made for<br />speed.
                         </h2>
                         <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
-                            Kestrel streamlines your monitoring workflow into three celestial steps.
+                            Kestrel streamlines your monitoring workflow into three steps.
                         </p>
                         <div className="w-14 h-0.5 bg-white rounded-full"></div>
                     </div>

@@ -29,10 +29,15 @@ public class AuthController {
         String username = request.get("username");
         String email = request.get("email");
         String rawPassword = request.get("password");
+        String confirmPassword = request.get("confirmPassword");
 
         // Simple validation to ensure fields aren't blank
-        if (username == null || email == null || rawPassword == null) {
+        if (username == null || email == null || rawPassword == null || confirmPassword == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "All fields are required"));
+        }
+
+        if (!rawPassword.equals(confirmPassword)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Passwords do not match"));
         }
 
         // Hash the password before saving!

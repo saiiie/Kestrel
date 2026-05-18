@@ -11,7 +11,7 @@ const SecurityCard = ({ onOpenPasswordModal, onOpenDeleteModal }) => {
             <div className="space-y-6">
                 <button 
                     onClick={onOpenPasswordModal}
-                    className="w-full px-4 py-3 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center justify-center"
+                    className="cursor-pointer w-full px-4 py-3 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center justify-center"
                 >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                     Change Password
@@ -19,7 +19,7 @@ const SecurityCard = ({ onOpenPasswordModal, onOpenDeleteModal }) => {
 
                 <button 
                     onClick={onOpenDeleteModal}
-                    className="w-full px-4 py-3 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center justify-center"
+                    className="cursor-pointer w-full px-4 py-3 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center justify-center"
                 >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     Delete Account

@@ -103,15 +103,15 @@ const ProfileSettingsCard = ({ initialData }) => {
                 <div className="pt-4 flex items-center space-x-4">
                     <button
                         onClick={handleSave}
-                        className="px-8 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
+                        className="cursor-pointer px-8 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
                     >
                         Update Profile
                     </button>
-                    
+
                     {/* Inline Notification */}
-                    <div className="h-10 flex items-center">
+                    <div className="h-10 flex items-right">
                         {toast.show && (
-                            <div className={`flex items-center animate-in fade-in slide-in-from-left-2 duration-300 ${toast.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <div className={`flex text-[10px] items-center animate-in fade-in slide-in-from-left-2 duration-300 ${toast.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
                                 {toast.type === 'success' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
                                 {toast.type === 'error' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                                 <span className="text-xs font-medium italic">{toast.message}</span>

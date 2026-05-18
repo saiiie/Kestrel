@@ -94,20 +94,20 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                 </div>
 
                 <div className="flex space-x-4">
-                    <button onClick={handleTestConnection} className="px-5 py-2.5 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center">
+                    <button onClick={handleTestConnection} className="cursor-pointer px-5 py-2.5 bg-[#1A1D2D] hover:bg-gray-800 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
                         Test Connection
                     </button>
                     <button
                         onClick={handleSaveWebhook}
-                        className="px-8 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
+                        className="cursor-pointer px-8 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95"
                     >
                         Save Webhook
                     </button>
                 </div>
 
                 {/* Inline Notification */}
-                <div className="h-10 mt-2 flex items-center">
+                <div className="h-2 flex items-center">
                     {toast.show && (
                         <div className={`flex items-center animate-in fade-in slide-in-from-left-2 duration-300 ${toast.type === 'success' ? 'text-emerald-400' :
                             toast.type === 'test' ? 'text-indigo-400' :
@@ -116,7 +116,7 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                             {toast.type === 'success' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
                             {toast.type === 'test' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
                             {toast.type === 'error' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                            <span className="text-xs font-medium italic">{toast.message}</span>
+                            <span className="text-[10px] font-medium italic">{toast.message}</span>
                         </div>
                     )}
                 </div>

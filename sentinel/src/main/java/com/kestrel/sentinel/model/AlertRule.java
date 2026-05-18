@@ -25,6 +25,9 @@ public class AlertRule {
     @Column(nullable = false, precision = 18, scale = 8)
     private BigDecimal targetPrice; // BigDecimal prevents rounding errors with crypto!
 
+    @Column(nullable = true, precision = 18, scale = 8)
+    private BigDecimal baselinePrice; // The price when the alert was created, used for DEVIATES condition
+
     @Column(nullable = false)
     private boolean isActive = true; // For the toggle switch on your frontend dashboard
 
@@ -46,6 +49,9 @@ public class AlertRule {
 
     public BigDecimal getTargetPrice() { return targetPrice; }
     public void setTargetPrice(BigDecimal targetPrice) { this.targetPrice = targetPrice; }
+
+    public BigDecimal getBaselinePrice() { return baselinePrice; }
+    public void setBaselinePrice(BigDecimal baselinePrice) { this.baselinePrice = baselinePrice; }
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }

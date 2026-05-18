@@ -5,6 +5,7 @@ const ChangePasswordModal = memo(({ isOpen, onClose, onSubmit }) => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [localError, setLocalError] = useState('');
+    const [localSuccess, setLocalSuccess] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -12,36 +13,44 @@ const ChangePasswordModal = memo(({ isOpen, onClose, onSubmit }) => {
             setNewPassword('');
             setConfirmPassword('');
             setLocalError('');
+            setLocalSuccess('');
         }
     }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!oldPassword || !newPassword || !confirmPassword) {
-            setLocalError('All fields are required');
+            setLocalError('All fields are required.');
+            setLocalSuccess('');
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            setLocalError('New passwords do not match');
+            setLocalError('New passwords do not match.');
+            setLocalSuccess('');
             return;
         }
 
         setLocalError('');
-        onSubmit({ oldPassword, newPassword });
+        setLocalSuccess('');
+        const result = await onSubmit({ oldPassword, newPassword });
+        if (result && !result.success) {
+            setLocalError(result.error);
+        } else if (result && result.success) {
+            setLocalSuccess('Password updated successfully.');
+            setTimeout(() => {
+                onClose();
+            }, 2000);
+        }
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-fade-in will-change-transform p-4">
             <div className="bg-[#11131C] border border-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
                 <h3 className="text-lg font-bold text-white mb-4">Change Password</h3>
-                
-                {localError && (
-                    <div className="mb-4 text-rose-400 text-xs italic">
-                        {localError}
-                    </div>
-                )}
+
+
 
                 <div className="space-y-4 mb-6">
                     <div>
@@ -76,16 +85,29 @@ const ChangePasswordModal = memo(({ isOpen, onClose, onSubmit }) => {
                     </div>
                 </div>
 
+                <div className="mb-2 h-4 flex items-center justify-left">
+                    {localError && (
+                        <span className="text-rose-400 text-[10px] italic text-left">
+                            {localError}
+                        </span>
+                    )}
+                    {localSuccess && (
+                        <span className="text-emerald-400 text-[10px] italic text-left">
+                            {localSuccess}
+                        </span>
+                    )}
+                </div>
+
                 <div className="flex space-x-3">
-                    <button 
+                    <button
                         onClick={onClose}
-                        className="flex-1 py-3 text-gray-400 hover:text-white bg-transparent border border-gray-800 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
+                        className="cursor-pointer flex-1 py-3 text-gray-400 hover:text-white bg-transparent border border-gray-800 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         onClick={handleSubmit}
-                        className="flex-1 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-colors"
+                        className="cursor-pointer flex-1 py-3 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-bold transition-colors"
                     >
                         Update
                     </button>

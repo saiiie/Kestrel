@@ -31,13 +31,12 @@ const Settings = () => {
             const data = await response.json();
 
             if (response.ok) {
-                showToast('Password updated successfully', 'success');
-                setShowPasswordModal(false);
+                return { success: true };
             } else {
-                showToast(data.error || 'Failed to update password', 'error');
+                return { success: false, error: data.error || 'Failed to update password' };
             }
         } catch (error) {
-            showToast('Network error while updating password', 'error');
+            return { success: false, error: 'Network error while updating password' };
         }
     };
 

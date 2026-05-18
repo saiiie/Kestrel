@@ -21,7 +21,13 @@ public class ConfigController {
                 Map.of("id", "bitcoin", "name", "Bitcoin"),
                 Map.of("id", "ethereum", "name", "Ethereum"),
                 Map.of("id", "solana", "name", "Solana"),
-                Map.of("id", "tether", "name", "Tether"));
+                Map.of("id", "tether", "name", "Tether"),
+                Map.of("id", "binancecoin", "name", "BNB"),
+                Map.of("id", "ripple", "name", "XRP"),
+                Map.of("id", "cardano", "name", "Cardano"),
+                Map.of("id", "dogecoin", "name", "Dogecoin"),
+                Map.of("id", "polkadot", "name", "Polkadot"),
+                Map.of("id", "chainlink", "name", "Chainlink"));
 
         // These align exactly with your Spring Boot AlertRule conditions
         List<Map<String, String>> conditions = List.of(

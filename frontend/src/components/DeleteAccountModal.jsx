@@ -10,23 +10,23 @@ const DeleteAccountModal = memo(({ isOpen, onClose, onConfirm }) => {
                     <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     <h3 className="text-lg font-bold">Delete Account</h3>
                 </div>
-                
-                <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+
+                <p className="text-xs text-gray-400 mb-6 leading-relaxed">
                     Are you absolutely sure you want to delete your Kestrel account? This action cannot be undone and will permanently erase all your alert rules, configuration, and history.
                 </p>
 
                 <div className="flex space-x-3">
-                    <button 
+                    <button
                         onClick={onClose}
-                        className="flex-1 py-3 text-gray-400 hover:text-white bg-transparent border border-gray-800 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
+                        className="cursor-pointer flex-1 py-3 text-gray-400 hover:text-white bg-transparent border border-gray-800 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         onClick={onConfirm}
-                        className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-bold transition-colors"
+                        className="cursor-pointer flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-bold transition-colors"
                     >
-                        Yes, Delete It
+                        Yes, Delete it
                     </button>
                 </div>
             </div>

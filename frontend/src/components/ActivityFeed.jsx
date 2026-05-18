@@ -22,7 +22,7 @@ const ActivityFeed = memo(({ history, onClearHistory }) => {
                 <h3 className="text-lg font-bold text-white tracking-wide">Recent Activity</h3>
                 <button
                     onClick={onClearHistory}
-                    className="text-xs font-medium text-gray-500 hover:text-red-400 transition-colors tracking-wider"
+                    className="cursor-pointer text-xs font-medium text-gray-500 hover:text-red-400 transition-colors tracking-wider"
                 >
                     Clear Activity
                 </button>
