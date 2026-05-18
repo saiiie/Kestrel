@@ -13,6 +13,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 🌊 Premium Scroll Snapping System */
+.landing-snap-container {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.landing-snap-section {
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
 /* 🌟 Sleek Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

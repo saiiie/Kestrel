@@ -1,10 +1,153 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, Eye, Zap, Bird } from 'lucide-react';
 import Footer from '../components/Footer';
+import CustomCursor from '../components/CustomCursor';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const activeIndexRef = useRef(0);
+    const isAnimatingRef = useRef(false);
+    const containerRef = useRef(null);
+
+    const easeInOutCubic = (t) => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const scrollToSection = (index) => {
+        if (!containerRef.current) return;
+        const container = containerRef.current;
+        const sections = container.querySelectorAll('.landing-snap-section');
+        if (!sections[index]) return;
+
+        isAnimatingRef.current = true;
+        activeIndexRef.current = index;
+
+        const startScroll = container.scrollTop;
+        const targetScroll = sections[index].offsetTop;
+        const distance = targetScroll - startScroll;
+
+        const duration = 1200; // Premium 1.2s smooth animated slide!
+        let startTime = null;
+
+        const animate = (currentTime) => {
+            if (!startTime) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+
+            const ease = easeInOutCubic(progress);
+            container.scrollTop = startScroll + distance * ease;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                isAnimatingRef.current = false;
+            }
+        };
+
+        requestAnimationFrame(animate);
+    };
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        let touchStartY = 0;
+
+        const handleWheel = (e) => {
+            e.preventDefault();
+            if (isAnimatingRef.current) return;
+
+            const delta = e.deltaY;
+            if (Math.abs(delta) < 20) return;
+
+            let targetIndex = activeIndexRef.current;
+            if (delta > 0) {
+                if (activeIndexRef.current < 3) {
+                    targetIndex = activeIndexRef.current + 1;
+                }
+            } else {
+                if (activeIndexRef.current > 0) {
+                    targetIndex = activeIndexRef.current - 1;
+                }
+            }
+
+            if (targetIndex !== activeIndexRef.current) {
+                scrollToSection(targetIndex);
+            }
+        };
+
+        const handleTouchStart = (e) => {
+            touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchEnd = (e) => {
+            if (isAnimatingRef.current) return;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+
+            if (Math.abs(diff) > 50) {
+                let targetIndex = activeIndexRef.current;
+                if (diff > 0) {
+                    if (activeIndexRef.current < 3) {
+                        targetIndex = activeIndexRef.current + 1;
+                    }
+                } else {
+                    if (activeIndexRef.current > 0) {
+                        targetIndex = activeIndexRef.current - 1;
+                    }
+                }
+
+                if (targetIndex !== activeIndexRef.current) {
+                    scrollToSection(targetIndex);
+                }
+            }
+        };
+
+        const handleKeyDown = (e) => {
+            if (isAnimatingRef.current) return;
+            let targetIndex = activeIndexRef.current;
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                if (activeIndexRef.current < 3) {
+                    targetIndex = activeIndexRef.current + 1;
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                if (activeIndexRef.current > 0) {
+                    targetIndex = activeIndexRef.current - 1;
+                }
+            } else if (e.key === 'Home') {
+                targetIndex = 0;
+            } else if (e.key === 'End') {
+                targetIndex = 3;
+            }
+
+            if (targetIndex !== activeIndexRef.current) {
+                e.preventDefault();
+                scrollToSection(targetIndex);
+            }
+        };
+
+        const handleResize = () => {
+            const sections = container.querySelectorAll('.landing-snap-section');
+            if (sections[activeIndexRef.current]) {
+                container.scrollTop = sections[activeIndexRef.current].offsetTop;
+            }
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: false });
+        window.addEventListener('keydown', handleKeyDown, { passive: false });
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchend', handleTouchEnd);
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const features = [
         {
@@ -43,7 +186,8 @@ const LandingPage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#07090F] text-white flex flex-col">
+        <div ref={containerRef} className="landing-snap-container bg-[#07090F] text-white flex flex-col custom-scrollbar">
+            <CustomCursor />
 
             {/* ── NAVBAR ── */}
             <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-[#07090F]/80 backdrop-blur-md border-b border-gray-800/40">
@@ -71,7 +215,7 @@ const LandingPage = () => {
             {/* ── HERO ── */}
             <section
                 id="hero"
-                className="flex flex-col items-center justify-center text-center min-h-screen px-6 pt-20"
+                className="landing-snap-section flex flex-col items-center justify-center text-center px-6 pt-20"
             >
                 <div className="flex items-center space-x-2 mb-10">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#4f7cff]"></span>
@@ -102,7 +246,7 @@ const LandingPage = () => {
             </section>
 
             {/* ── FEATURES ── */}
-            <section id="features" className="px-6 py-28 max-w-6xl mx-auto w-full">
+            <section id="features" className="landing-snap-section flex flex-col justify-center px-6 py-28 max-w-6xl mx-auto w-full">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold text-white mb-4">Features</h2>
                     <p className="text-gray-400 max-w-lg mx-auto text-sm leading-relaxed">
@@ -129,7 +273,7 @@ const LandingPage = () => {
             </section>
 
             {/* ── HOW IT WORKS ── */}
-            <section id="how-it-works" className="px-6 py-28 max-w-6xl mx-auto w-full">
+            <section id="how-it-works" className="landing-snap-section flex flex-col justify-center px-6 py-28 max-w-6xl mx-auto w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
 
                     {/* Left: sticky header */}
@@ -160,34 +304,36 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* ── CTA ── */}
-            <section id="cta" className="px-6 py-20 max-w-6xl mx-auto w-full">
-                <div
-                    className="rounded-3xl px-10 py-20 text-center"
-                    style={{
-                        background: 'radial-gradient(ellipse at center, #131929 0%, #0d111d 60%, #090d17 100%)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                >
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
-                        Ready to start observing?
-                    </h2>
-                    <p className="text-gray-400 text-sm max-w-md mx-auto mb-10 leading-relaxed">
-                        Keep an eye on the market— without watching the screen.
-                    </p>
-                    <button
-                        onClick={() => navigate('/register')}
-                        className="px-10 py-4 bg-white hover:bg-gray-100 text-black text-sm font-bold rounded-xl transition-all shadow-lg active:scale-95"
+            {/* ── CTA & FOOTER ── */}
+            <section id="cta" className="landing-snap-section flex flex-col justify-between px-6 pt-28 pb-8 max-w-6xl mx-auto w-full">
+                <div className="flex-grow flex flex-col justify-center">
+                    <div
+                        className="rounded-3xl px-10 py-20 text-center"
+                        style={{
+                            background: 'radial-gradient(ellipse at center, #131929 0%, #0d111d 60%, #090d17 100%)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                        }}
                     >
-                        Get Started for Free
-                    </button>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+                            Ready to start observing?
+                        </h2>
+                        <p className="text-gray-400 text-sm max-w-md mx-auto mb-10 leading-relaxed">
+                            Keep an eye on the market— without watching the screen.
+                        </p>
+                        <button
+                            onClick={() => navigate('/register')}
+                            className="px-10 py-4 bg-white hover:bg-gray-100 text-black text-sm font-bold rounded-xl transition-all shadow-lg active:scale-95"
+                        >
+                            Get Started for Free
+                        </button>
+                    </div>
+                </div>
+
+                {/* ── FOOTER ── */}
+                <div className="w-full pt-12">
+                    <Footer />
                 </div>
             </section>
-
-            {/* ── FOOTER ── */}
-            <div className="max-w-6xl mx-auto w-full px-6">
-                <Footer />
-            </div>
 
         </div>
     );
