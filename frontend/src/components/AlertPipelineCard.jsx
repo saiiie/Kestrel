@@ -65,8 +65,8 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                 <h2 className="text-lg font-bold text-white">Alert Pipeline (Discord)</h2>
             </div>
 
-            <p className="text-sm text-gray-400 mb-6">
-                Route critical market fluctuations directly to your designated Discord channels via webhook integration.
+            <p className="text-xs text-gray-400 mb-6">
+                Route alerts to your designated Discord channel via webhook integration.
             </p>
 
             <div className="space-y-6">
@@ -109,11 +109,10 @@ const AlertPipelineCard = ({ initialWebhook }) => {
                 {/* Inline Notification */}
                 <div className="h-10 mt-2 flex items-center">
                     {toast.show && (
-                        <div className={`flex items-center animate-in fade-in slide-in-from-left-2 duration-300 ${
-                            toast.type === 'success' ? 'text-emerald-400' :
+                        <div className={`flex items-center animate-in fade-in slide-in-from-left-2 duration-300 ${toast.type === 'success' ? 'text-emerald-400' :
                             toast.type === 'test' ? 'text-indigo-400' :
-                            'text-rose-400'
-                        }`}>
+                                'text-rose-400'
+                            }`}>
                             {toast.type === 'success' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
                             {toast.type === 'test' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
                             {toast.type === 'error' && <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}

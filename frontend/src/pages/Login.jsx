@@ -38,7 +38,7 @@ const Login = () => {
             <div className="flex-grow flex flex-col justify-center items-center py-12">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">Kestrel</h1>
-                    <p className="text-gray-400 text-sm">Welcome Back — Access your crypto dashboard</p>
+                    <p className="text-gray-400 text-xs">Welcome Back — Access your crypto dashboard</p>
                 </div>
 
                 <div className="w-full max-w-md bg-[#11131C] rounded-2xl border border-gray-800 p-8 shadow-2xl">
@@ -95,7 +95,7 @@ const Login = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs text-gray-500">
                             Don't have an account? <Link to="/register" className="text-white hover:underline font-medium">Sign Up</Link>
                         </p>
                     </div>

@@ -45,7 +45,7 @@ const Register = () => {
             <div className="flex-grow flex flex-col justify-center items-center py-12">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">Kestrel</h1>
-                    <p className="text-gray-400 text-sm">Initialize your crypto observation node.</p>
+                    <p className="text-gray-400 text-xs">Initialize your crypto observation node.</p>
                 </div>
 
                 <div className="w-full max-w-md bg-[#11131C] rounded-2xl border border-gray-800 p-8 shadow-2xl">
@@ -59,13 +59,13 @@ const Register = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-2">Full Name</label>
+                            <label className="block text-xs font-medium text-gray-400 mb-2">Username</label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full bg-[#05050A] border border-gray-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                                placeholder="Enter your full name"
+                                placeholder="Choose your username"
                                 required
                             />
                         </div>
@@ -108,8 +108,7 @@ const Register = () => {
                                     </svg>
                                 ) : (
                                     <>
-                                        <span>Initialize Node</span>
-                                        <span>🚀</span>
+                                        <span>Sign Up</span>
                                     </>
                                 )}
                             </button>
@@ -117,7 +116,7 @@ const Register = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs text-gray-500">
                             Already have an active node? <Link to="/login" className="text-white hover:underline font-medium">Log In</Link>
                         </p>
                     </div>

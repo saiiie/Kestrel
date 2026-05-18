@@ -47,7 +47,7 @@ const AlertsTable = memo(({ rules, livePrices, onOpenNewAlert, onEditAlert, onDe
                         <tbody className="divide-y divide-gray-800/30">
                             {currentRules.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="py-12 text-center text-gray-500">
+                                    <td colSpan="5" className="py-12 text-center text-sm text-gray-500">
                                         No alerts configured yet. Click 'New Alert' to start monitoring.
                                     </td>
                                 </tr>

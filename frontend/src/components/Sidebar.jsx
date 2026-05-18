@@ -7,7 +7,7 @@ const Sidebar = () => {
     const { logout } = useAuth();
     // Helper function to handle the active vs inactive wrapper classes
     const navLinkClasses = ({ isActive }) =>
-        `flex items-center px-6 py-3 transition-all group border-l-4 ${isActive
+        `flex items-center px-6 py-3 text-sm transition-all group border-l-4 ${isActive
             ? 'bg-[#1A1D2D] text-white border-indigo-500'
             : 'text-gray-400 hover:text-white hover:bg-[#1A1D2D] border-transparent'
         }`;
@@ -18,10 +18,10 @@ const Sidebar = () => {
             {/* Brand Header */}
             <div className="p-6">
                 <div className="flex items-center space-x-2 text-indigo-500 mb-1">
-                    <Bird size={24} strokeWidth={2.5} />
-                    <h1 className="text-xl font-bold tracking-wider text-white">Kestrel</h1>
+                    <Bird size={20} strokeWidth={2.5} />
+                    <h1 className="text-lg font-bold tracking-wider text-white">Kestrel</h1>
                 </div>
-                <p className="text-xs text-gray-500">v1.0.4-Celestial</p>
+                <p className="text-[10px] text-gray-500">v1.0.4-Celestial</p>
             </div>
 
             {/* Navigation Links */}
@@ -54,7 +54,7 @@ const Sidebar = () => {
             <div className="p-6 mb-4">
                 <button 
                     onClick={logout}
-                    className="flex items-center text-gray-400 hover:text-red-400 transition-colors group"
+                    className="flex items-center text-sm text-gray-400 hover:text-red-400 transition-colors group"
                 >
                     <LogOut size={18} className="mr-3" />
                     <span className="font-medium">Log Out</span>
