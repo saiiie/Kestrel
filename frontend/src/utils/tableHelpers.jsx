@@ -1,4 +1,3 @@
-import React from 'react';
 import { SiBitcoin, SiEthereum, SiSolana, SiTether } from "react-icons/si";
 
 export const formatCurrency = (amount) => {

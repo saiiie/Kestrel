@@ -12,32 +12,39 @@ import java.util.List;
 public class AlertRuleController {
 
     private final AlertRuleService alertRuleService;
+    private final com.kestrel.sentinel.config.Ownership ownership;
 
-    public AlertRuleController(AlertRuleService alertRuleService) {
+    public AlertRuleController(AlertRuleService alertRuleService, com.kestrel.sentinel.config.Ownership ownership) {
         this.alertRuleService = alertRuleService;
+        this.ownership = ownership;
     }
 
     // POST: Create a new alert rule
     @PostMapping
     public ResponseEntity<AlertRule> createRule(@RequestBody AlertRule rule) {
+        rule.setId(null);
+        rule.setUser(ownership.currentUser());
         AlertRule savedRule = alertRuleService.saveRule(rule);
         return ResponseEntity.ok(savedRule);
     }
 
     // GET: Fetch all rules for a specific dashboard
     @GetMapping("/user/{userId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<List<AlertRule>> getUserRules(@PathVariable Long userId) {
         return ResponseEntity.ok(alertRuleService.getUserRules(userId));
     }
 
     // DELETE: Remove a rule when the user clicks the trash can icon
     @DeleteMapping("/{ruleId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isRuleOwner(#ruleId)")
     public ResponseEntity<Void> deleteRule(@PathVariable Long ruleId) {
         alertRuleService.deleteRule(ruleId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isRuleOwner(#id)")
     public ResponseEntity<AlertRule> updateRule(@PathVariable Long id, @RequestBody AlertRule updatedRule) {
         return ResponseEntity.ok(alertRuleService.updateRule(id, updatedRule));
     }

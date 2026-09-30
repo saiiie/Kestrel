@@ -17,11 +17,13 @@ public class AlertHistoryController {
     }
 
     @GetMapping("/user/{userId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public List<AlertHistory> getUserHistory(@PathVariable Long userId) {
         return historyRepository.findTop10ByUserIdOrderByTriggeredAtDesc(userId);
     }
 
     @DeleteMapping("/user/{userId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public void deleteUserHistory(@PathVariable Long userId) {
         // In a real app, you'd only delete history for this specific user.
         // For this prototype, we'll clear everything or just the user's records.

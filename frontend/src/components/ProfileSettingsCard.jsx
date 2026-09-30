@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../context/useAuth';
 import { apiFetch } from '../utils/api';
 
 const ProfileSettingsCard = ({ initialData }) => {
@@ -10,13 +10,12 @@ const ProfileSettingsCard = ({ initialData }) => {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const cardRef = useRef(null);
 
-    // Sync input field value when fresh initialData is loaded
-    useEffect(() => {
-        if (initialData) {
-            setLocalData(initialData);
-            setOriginalData(initialData);
-        }
-    }, [initialData]);
+    const [previousProfile, setPreviousProfile] = useState(initialData);
+    if (initialData.username !== previousProfile.username || initialData.email !== previousProfile.email) {
+        setPreviousProfile(initialData);
+        setLocalData(initialData);
+        setOriginalData(initialData);
+    }
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -47,7 +46,7 @@ const ProfileSettingsCard = ({ initialData }) => {
         }
 
         try {
-            const response = await apiFetch(`http://localhost:5000/api/users/${userId}/profile`, {
+            const response = await apiFetch(`/api/users/${userId}/profile`, {
                 method: 'PUT',
                 body: JSON.stringify({
                     username: localData.username,
@@ -66,7 +65,7 @@ const ProfileSettingsCard = ({ initialData }) => {
                 // Revert to original on error
                 setLocalData(originalData);
             }
-        } catch (error) {
+        } catch {
             showToast('Network error while updating profile.', 'error');
             setLocalData(originalData);
         }

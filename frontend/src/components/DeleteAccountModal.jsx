@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 const DeleteAccountModal = memo(({ isOpen, onClose, onConfirm }) => {
     if (!isOpen) return null;

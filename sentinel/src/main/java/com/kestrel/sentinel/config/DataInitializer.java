@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * Ensures a test user exists so the frontend 'userId = 1' hardcoding works.
  */
 @Configuration
+@org.springframework.context.annotation.Profile("dev-seed")
 public class DataInitializer {
 
     private final UserRepository userRepository;

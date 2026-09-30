@@ -23,11 +23,17 @@ public class AlertPublisherService {
         try {
             // Drop it into the RabbitMQ queue
             // The Jackson2JsonMessageConverter we configured in RabbitConfig will handle the JSON conversion
-            rabbitTemplate.convertAndSend(QUEUE_NAME, payload);
+            var correlation = new org.springframework.amqp.rabbit.connection.CorrelationData();
+            rabbitTemplate.convertAndSend("", QUEUE_NAME, payload, correlation);
+            var confirm = correlation.getFuture().get(10, java.util.concurrent.TimeUnit.SECONDS);
+            if (!confirm.isAck() || correlation.getReturned() != null) {
+                throw new IllegalStateException("Alert was not accepted by the queue");
+            }
             
             System.out.println("🚀 ALERT DISPATCHED to RabbitMQ: " + payload.assetId());
         } catch (Exception e) {
-            System.err.println("Failed to publish alert to RabbitMQ: " + e.getMessage());
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            throw new IllegalStateException("Failed to publish alert to RabbitMQ", e);
         }
     }
 }

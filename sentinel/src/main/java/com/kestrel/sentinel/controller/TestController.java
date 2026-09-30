@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
 @RestController
+@org.springframework.context.annotation.Profile("dev-seed")
 @RequestMapping("/api/test")
 public class TestController {
 

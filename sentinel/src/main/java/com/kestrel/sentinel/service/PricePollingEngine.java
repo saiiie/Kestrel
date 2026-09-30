@@ -18,29 +18,25 @@ public class PricePollingEngine {
     private final CryptoPriceService priceService;
     private final AlertRuleRepository ruleRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
-    private final RabbitTemplate rabbitTemplate;
+    private final AlertPublisherService publisher;
     private final EncryptionUtil encryptionUtil;
 
     public PricePollingEngine(CryptoPriceService priceService,
             AlertRuleRepository ruleRepository,
             org.springframework.context.ApplicationEventPublisher eventPublisher,
-            RabbitTemplate rabbitTemplate,
+            AlertPublisherService publisher,
             EncryptionUtil encryptionUtil) {
         this.priceService = priceService;
         this.ruleRepository = ruleRepository;
         this.eventPublisher = eventPublisher;
-        this.rabbitTemplate = rabbitTemplate;
+        this.publisher = publisher;
         this.encryptionUtil = encryptionUtil;
     }
 
-    @Scheduled(fixedDelay = 15000)
+    @Scheduled(fixedDelayString = "${PRICE_POLL_INTERVAL_MS:15000}")
     public void evaluateRules() {
         List<AlertRule> activeRules = ruleRepository.findByIsActiveTrue();
 
-        if (activeRules.isEmpty()) {
-            System.out.println("😴 Kestrel Engine: No active rules to evaluate. Sleeping...");
-            return;
-        }
 
         System.out.println("⏳ Kestrel Engine: Found " + activeRules.size() + " active rules. Fetching live prices...");
         Map<String, Double> livePrices = priceService.fetchLivePrices();
@@ -55,8 +51,13 @@ public class PricePollingEngine {
         for (AlertRule rule : activeRules) {
             Double currentPrice = livePrices.get(rule.getAssetId());
 
-            if (currentPrice != null && isConditionMet(rule, currentPrice)) {
-                triggerAlert(rule, currentPrice);
+            try {
+                if (currentPrice != null && isConditionMet(rule, currentPrice)) {
+                    triggerAlert(rule, currentPrice);
+                }
+            } catch (Exception exception) {
+                // One missing webhook or failed delivery must not stop other users' rules.
+                System.err.println("Could not queue rule " + rule.getId() + ": " + exception.getClass().getSimpleName());
             }
         }
     }
@@ -84,6 +85,14 @@ public class PricePollingEngine {
     }
 
     private void triggerAlert(AlertRule rule, Double currentPrice) {
+        String webhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl());
+        if (webhook == null || webhook.isBlank()) return;
+        webhook = com.kestrel.sentinel.util.DiscordWebhook.validate(webhook);
+        publisher.publishAlert(new com.kestrel.sentinel.dto.AlertPayload(
+                webhook, rule.getAssetId(), rule.getConditionType(), rule.getTargetPrice(), BigDecimal.valueOf(currentPrice)));
+        // Pause only after RabbitMQ confirms receipt. A publication failure leaves the rule active.
+        rule.setActive(false);
+        ruleRepository.save(rule);
         System.out.println("🚨 ALERT TRIGGERED: " + rule.getAssetId() + " hit " + currentPrice);
 
         // 1. Save to Database (This will instantly show up in our React Dashboard!)
@@ -104,24 +113,5 @@ public class PricePollingEngine {
             description
         ));
 
-        // 2. Disable the rule so it doesn't trigger every 60 seconds forever
-        rule.setActive(false);
-        ruleRepository.save(rule);
-
-        // 3. Publish to RabbitMQ for Discord Webhook!
-        // 🔓 Decrypt the webhook URL before sending it to the dispatcher
-        String plainWebhook = encryptionUtil.decrypt(rule.getUser().getDiscordWebhookUrl()).trim();
-
-        com.kestrel.sentinel.dto.AlertPayload payload = new com.kestrel.sentinel.dto.AlertPayload(
-                plainWebhook,
-                rule.getAssetId(),
-                rule.getConditionType(),
-                rule.getTargetPrice(),
-                BigDecimal.valueOf(currentPrice)
-        );
-
-        rabbitTemplate.convertAndSend(com.kestrel.sentinel.config.RabbitConfig.QUEUE_NAME, payload);
-
-        System.out.println("✅ Sent AlertPayload to RabbitMQ for " + rule.getAssetId());
     }
 }

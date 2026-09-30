@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 const SummaryCard = memo(({ rules }) => {
     // Calculate dynamic stats based on your NeonDB data

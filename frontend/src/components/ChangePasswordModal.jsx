@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 const ChangePasswordModal = memo(({ isOpen, onClose, onSubmit }) => {
     const [oldPassword, setOldPassword] = useState('');

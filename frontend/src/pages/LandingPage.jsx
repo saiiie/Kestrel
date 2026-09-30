@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, Eye, Zap, Bird } from 'lucide-react';
 import Footer from '../components/Footer';
@@ -10,11 +10,7 @@ const LandingPage = () => {
     const isAnimatingRef = useRef(false);
     const containerRef = useRef(null);
 
-    const easeInOutCubic = (t) => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
-
-    const scrollToSection = (index) => {
+    const scrollToSection = useCallback((index) => {
         if (!containerRef.current) return;
         const container = containerRef.current;
         const sections = container.querySelectorAll('.landing-snap-section');
@@ -35,7 +31,7 @@ const LandingPage = () => {
             const timeElapsed = currentTime - startTime;
             const progress = Math.min(timeElapsed / duration, 1);
 
-            const ease = easeInOutCubic(progress);
+            const ease = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
             container.scrollTop = startScroll + distance * ease;
 
             if (progress < 1) {
@@ -46,7 +42,7 @@ const LandingPage = () => {
         };
 
         requestAnimationFrame(animate);
-    };
+    }, []);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -147,7 +143,7 @@ const LandingPage = () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    }, [scrollToSection]);
 
     const features = [
         {

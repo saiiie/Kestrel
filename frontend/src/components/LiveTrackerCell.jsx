@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 const LiveTrackerCell = memo(({ rule, currentPrice }) => {
     const formatCurrency = (amount) => {
@@ -24,9 +24,9 @@ const LiveTrackerCell = memo(({ rule, currentPrice }) => {
             };
         }
 
-        let percentage = 0;
-        let barColor = 'bg-gray-500';
-        let badgeColor = 'text-indigo-400 bg-indigo-400/5 border-indigo-400/20';
+        let percentage;
+        let barColor;
+        let badgeColor;
 
         if (rule.conditionType === 'DROPS_BELOW') {
             percentage = (rule.targetPrice / currentPrice) * 100;

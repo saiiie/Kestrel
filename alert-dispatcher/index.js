@@ -1,104 +1,58 @@
 require('dotenv').config();
 const amqp = require('amqplib');
-const axios = require('axios');
-
-// The exact queue name we defined in the Spring Boot Publisher
-const QUEUE_NAME = 'kestrel-alerts-queue';
+const { deliver } = require('./delivery');
+const QUEUE = 'kestrel-alerts-queue';
+const FAILED_QUEUE = 'kestrel-alerts-failed';
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
 
 async function startDispatcher() {
+    let connection;
+    let reconnectScheduled = false;
+    const reconnect = () => {
+        if (reconnectScheduled) return;
+        reconnectScheduled = true;
+        setTimeout(startDispatcher, 5000);
+    };
     try {
-        console.log('🦅 Kestrel Dispatcher: Booting up...');
-
-        // 1. Connect to RabbitMQ
-        const connection = await amqp.connect(RABBITMQ_URL);
-        const channel = await connection.createChannel();
-
-        // 2. Ensure the queue exists before we try to read from it
-        await channel.assertQueue(QUEUE_NAME, { durable: true }); // Must match Spring Boot's default!
-
-        console.log(`✅ Connected to RabbitMQ. Listening for alerts on [${QUEUE_NAME}]...`);
-
-        // 3. Start listening to the queue
-        channel.consume(QUEUE_NAME, async (msg) => {
-            if (msg !== null) {
+        connection = await amqp.connect(RABBITMQ_URL);
+        connection.on('error', () => console.error('RabbitMQ connection error'));
+        connection.on('close', reconnect);
+        const channel = await connection.createConfirmChannel();
+        channel.on('error', () => console.error('RabbitMQ channel error'));
+        channel.on('close', () => { connection.close().catch(() => {}); reconnect(); });
+        await channel.assertQueue(QUEUE, { durable: true });
+        await channel.assertQueue(FAILED_QUEUE, { durable: true });
+        await channel.prefetch(1);
+        await channel.consume(QUEUE, async msg => {
+            if (!msg) { connection.close().catch(() => {}); return; }
+            try {
+                await deliver(JSON.parse(msg.content.toString()));
+                channel.ack(msg);
+                console.log('Discord alert delivered');
+            } catch {
+                // Preserve exhausted/permanent failures for inspection and manual replay.
+                // Do not log message bodies, HTTP errors, or webhook tokens.
                 try {
-                    // Parse the JSON payload coming from Java
-                    const rawContent = msg.content.toString();
-                    console.log('📦 Raw message received:', rawContent);
-                    
-                    const payload = JSON.parse(rawContent);
-                    console.log('📝 Parsed payload:', JSON.stringify(payload, null, 2));
-                    
-                    if (!payload.discordWebhookUrl) {
-                        console.error('❌ CRITICAL: No discordWebhookUrl found in payload!');
-                    } else {
-                        console.log(`🔗 Webhook URL (masked): ${payload.discordWebhookUrl.substring(0, 30)}... (Length: ${payload.discordWebhookUrl.length})`);
-                    }
-                    
-                    console.log(`\n🚨 Alert received for ${payload.assetId}! Dispatching to Discord...`);
-
-                    // 4. Send the Discord Message
-                    await sendDiscordAlert(payload);
-
-                    // 5. Tell RabbitMQ we successfully processed it so it can be deleted from the queue
+                    await new Promise((resolve, reject) => {
+                        channel.sendToQueue(FAILED_QUEUE, msg.content,
+                            { persistent: true, contentType: 'application/json' },
+                            error => error ? reject(error) : resolve());
+                    });
                     channel.ack(msg);
-                } catch (error) {
-                    console.error('❌ Error processing message:', error.message);
-                    // If it fails, reject it so it goes back in the queue or gets dropped safely
-                    channel.nack(msg, false, false);
+                    console.error('Alert retained in failed queue for review');
+                } catch {
+                    // Closing the connection makes unacknowledged messages available again.
+                    connection.close().catch(() => {});
                 }
             }
         });
-
-    } catch (error) {
-        console.error('❌ Failed to start Kestrel Dispatcher:', error);
-        // Retry logic: If RabbitMQ isn't ready yet, try again in 5 seconds
-        setTimeout(startDispatcher, 5000);
+        console.log('Dispatcher listening for alerts');
+    } catch {
+        console.error('Dispatcher connection unavailable; retrying');
+        if (connection) await connection.close().catch(() => {});
+        reconnect();
     }
 }
 
-async function sendDiscordAlert(payload) {
-    // Destructure the payload from our Java DTO
-    const { discordWebhookUrl, assetId, conditionType, targetPrice, currentLivePrice } = payload;
-
-    // Determine the color based on the condition (Red for drops, Green for rises, Blue for tests)
-    let embedColor, actionText, title, description;
-
-    if (conditionType === 'TEST_CONNECTION') {
-        embedColor = 3447003; // Nice Blue
-        title = "🔗 Kestrel Connection Test";
-        description = "Success! Your Kestrel Sentinel is now properly linked to this Discord channel. Critical market alerts will be dispatched here.";
-    } else {
-        embedColor = conditionType === 'DROPS_BELOW' ? 16711680 : 65280;
-        actionText = conditionType === 'DROPS_BELOW' ? 'dropped below' : 'surged above';
-        title = `🚨 Market Alert: ${assetId.toUpperCase()}`;
-        description = `Your automated rule has been triggered! **${assetId}** has ${actionText} your target.`;
-    }
-
-    // Build a rich Discord Embed
-    const discordMessage = {
-        username: "Kestrel Sentinel",
-        avatar_url: "https://i.imgur.com/rNfL8Gq.png", // A cool hawk icon!
-        embeds: [
-            {
-                title: title,
-                description: description,
-                color: embedColor,
-                fields: conditionType === 'TEST_CONNECTION' ? [] : [
-                    { name: "Target Price", value: `$${targetPrice.toLocaleString()}`, inline: true },
-                    { name: "Live Price", value: `$${currentLivePrice.toLocaleString()}`, inline: true }
-                ],
-                footer: { text: "Kestrel Automated Alerts" },
-                timestamp: new Date().toISOString()
-            }
-        ]
-    };
-
-    // Make the POST request to the user's specific Webhook
-    await axios.post(discordWebhookUrl, discordMessage);
-    console.log(`✅ Successfully sent Discord alert to ${discordWebhookUrl.substring(0, 45)}...`);
-}
-
-// Start the app
-startDispatcher();
+if (require.main === module) startDispatcher();
+module.exports = { startDispatcher };

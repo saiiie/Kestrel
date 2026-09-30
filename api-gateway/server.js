@@ -9,8 +9,10 @@ const SENTINEL_URL = process.env.SENTINEL_URL || 'http://localhost:8080';
 
 // Middleware
 // This allows your React app to talk to this server without browser security blocking it
-app.use(cors({ origin: process.env.FRONTEND_URL }));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 app.use(express.json());
+axios.defaults.timeout = 15000;
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 const getHeaders = (req) => {
     return req.headers.authorization ? { Authorization: req.headers.authorization } : {};

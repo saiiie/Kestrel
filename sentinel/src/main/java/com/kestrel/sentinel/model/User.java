@@ -17,9 +17,11 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String passwordHash;
 
     @Column(name = "discord_webhook_url", length = 500)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String discordWebhookUrl;
 
     public User() {

@@ -22,7 +22,10 @@ target/
 *.class
 *.jar
 *.war
-.mvn/
+.mvn/*
+!.mvn/wrapper/
+.mvn/wrapper/*
+!.mvn/wrapper/maven-wrapper.properties
 !mvnw
 !mvnw.cmd
 
@@ -33,3 +36,7 @@ target/
 .env.local
 .env.development
 .env.production
+.env.*
+!.env.example
+*.log
+.smoke/

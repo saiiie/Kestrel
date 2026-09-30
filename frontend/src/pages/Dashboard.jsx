@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import SummaryCard from '../components/SummaryCard';
 import ActivityFeed from '../components/ActivityFeed';
 import AlertsTable from '../components/AlertsTable';
 import AlertModal from '../components/AlertModal';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { apiFetch } from '../utils/api';
 
 const Dashboard = () => {
@@ -19,10 +19,10 @@ const Dashboard = () => {
     const { user } = useAuth();
     const userId = user?.id;
 
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         if (!userId) return;
         try {
-            const res = await apiFetch(`http://localhost:5000/api/history/user/${userId}`);
+            const res = await apiFetch(`/api/history/user/${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 console.log("📜 Latest Activity History:", data);
@@ -31,7 +31,7 @@ const Dashboard = () => {
         } catch (error) {
             console.error("❌ Failed to fetch history:", error);
         }
-    };
+    }, [userId]);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -54,9 +54,9 @@ const Dashboard = () => {
                 };
 
                 await Promise.all([
-                    fetchWithLogs(`http://localhost:5000/api/rules/user/${userId}`, setRules, "Rules"),
+                    fetchWithLogs(`/api/rules/user/${userId}`, setRules, "Rules"),
                     fetchHistory(),
-                    fetchWithLogs(`http://localhost:5000/api/config/form-options`, setFormOptions, "Form Options")
+                    fetchWithLogs(`/api/config/form-options`, setFormOptions, "Form Options")
                 ]);
 
             } catch (error) {
@@ -67,12 +67,12 @@ const Dashboard = () => {
         };
 
         fetchDashboardData();
-    }, [userId]);
+    }, [userId, fetchHistory]);
 
-    const fetchRules = async () => {
+    const fetchRules = useCallback(async () => {
         if (!userId) return;
         try {
-            const res = await apiFetch(`http://localhost:5000/api/rules/user/${userId}`);
+            const res = await apiFetch(`/api/rules/user/${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 setRules(data);
@@ -80,24 +80,22 @@ const Dashboard = () => {
         } catch (error) {
             console.error("❌ Failed to fetch rules:", error);
         }
-    };
+    }, [userId]);
 
     useEffect(() => {
         const fetchPrices = async () => {
             try {
-                const res = await apiFetch('http://localhost:5000/api/prices/live');
+                const res = await apiFetch('/api/prices/live');
                 if (res.ok) {
                     setLivePrices(await res.json());
                 }
-            } catch (error) {
+            } catch {
                 console.error("Failed to fetch live prices.");
             }
         };
 
         // Fetch immediately on load
         fetchPrices();
-        fetchHistory();
-        fetchRules();
 
         // Smart Polling: Fetch every 15s, but only if the tab is visible
         const interval = setInterval(() => {
@@ -109,7 +107,7 @@ const Dashboard = () => {
         }, 15000);
 
         return () => clearInterval(interval);
-    }, [userId]);
+    }, [userId, fetchHistory, fetchRules]);
 
     const handleCreateAlert = async (newAlertData) => {
         try {
@@ -121,7 +119,7 @@ const Dashboard = () => {
                 active: newAlertData.isActive
             };
 
-            const response = await apiFetch('http://localhost:5000/api/rules', {
+            const response = await apiFetch('/api/rules', {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
@@ -150,7 +148,7 @@ const Dashboard = () => {
                 active: updatedData.isActive
             };
 
-            const response = await apiFetch(`http://localhost:5000/api/rules/${updatedData.id}`, {
+            const response = await apiFetch(`/api/rules/${updatedData.id}`, {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
@@ -169,7 +167,7 @@ const Dashboard = () => {
 
     const handleDeleteAlert = async (ruleId) => {
         try {
-            const response = await apiFetch(`http://localhost:5000/api/rules/${ruleId}`, {
+            const response = await apiFetch(`/api/rules/${ruleId}`, {
                 method: 'DELETE',
             });
 
@@ -189,7 +187,7 @@ const Dashboard = () => {
 
     const handleClearHistory = async () => {
         try {
-            const response = await apiFetch(`http://localhost:5000/api/history/user/${userId}`, {
+            const response = await apiFetch(`/api/history/user/${userId}`, {
                 method: 'DELETE',
             });
 

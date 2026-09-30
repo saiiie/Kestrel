@@ -36,7 +36,7 @@ public class UserController {
         }
 
         // 🛡️ Trim to remove any accidental whitespace from copy-paste
-        webhookUrl = webhookUrl.trim();
+        webhookUrl = com.kestrel.sentinel.util.DiscordWebhook.validate(webhookUrl);
 
         // 🛡️ Even for a test, we follow the encryption pattern
         String encryptedWebhook = encryptionUtil.encrypt(webhookUrl);
@@ -44,7 +44,6 @@ public class UserController {
         // 🔓 Decrypt it back for the payload (simulating the real alert flow)
         String plainWebhook = encryptionUtil.decrypt(encryptedWebhook).trim();
 
-        System.out.println("🧪 DEBUG: Decrypted webhook (masked): " + plainWebhook.substring(0, 20) + "...");
 
         com.kestrel.sentinel.dto.AlertPayload payload = new com.kestrel.sentinel.dto.AlertPayload(
                 plainWebhook,
@@ -59,15 +58,17 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/webhook")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<?> updateWebhook(@PathVariable Long userId, @RequestBody Map<String, String> body) {
         String webhookUrl = body.get("webhookUrl");
         if (webhookUrl == null) {
             return ResponseEntity.badRequest().body("webhookUrl is required");
         }
+        String validatedWebhook = webhookUrl.isBlank() ? "" : com.kestrel.sentinel.util.DiscordWebhook.validate(webhookUrl);
 
         return userRepository.findById(userId).map(user -> {
             // 🛡️ Encrypt the webhook before saving to the database
-            String encryptedWebhook = encryptionUtil.encrypt(webhookUrl.trim());
+            String encryptedWebhook = encryptionUtil.encrypt(validatedWebhook);
             user.setDiscordWebhookUrl(encryptedWebhook);
             userRepository.save(user);
             
@@ -77,6 +78,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
         return userRepository.findById(userId).map(user -> {
             String plainWebhook = "";
@@ -97,6 +99,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/profile")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<?> updateProfile(@PathVariable Long userId, @RequestBody Map<String, String> body) {
         String username = body.get("username");
         String email = body.get("email");
@@ -122,12 +125,16 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/password")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<?> updatePassword(@PathVariable Long userId, @RequestBody Map<String, String> body) {
         String oldPassword = body.get("oldPassword");
         String newPassword = body.get("newPassword");
 
         if (oldPassword == null || newPassword == null || newPassword.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Old and new passwords are required"));
+        }
+        if (newPassword.length() < 8 || newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 8 characters and at most 72 UTF-8 bytes"));
         }
 
         return userRepository.findById(userId).map(user -> {
@@ -146,6 +153,7 @@ public class UserController {
 
     @org.springframework.transaction.annotation.Transactional
     @DeleteMapping("/{userId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@ownership.isUser(#userId)")
     public ResponseEntity<?> deleteAccount(@PathVariable Long userId) {
         if (!userRepository.existsById(userId)) {
             return ResponseEntity.notFound().build();

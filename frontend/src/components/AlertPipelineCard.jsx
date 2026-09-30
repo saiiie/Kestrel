@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { apiFetch } from '../utils/api';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const AlertPipelineCard = ({ initialWebhook }) => {
     const { user, updateUser } = useAuth();
@@ -9,12 +9,11 @@ const AlertPipelineCard = ({ initialWebhook }) => {
     const [isMasked, setIsMasked] = useState(true);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // Sync input field value when fresh webhook is loaded asynchronously
-    useEffect(() => {
-        if (initialWebhook) {
-            setWebhook(initialWebhook);
-        }
-    }, [initialWebhook]);
+    const [previousWebhook, setPreviousWebhook] = useState(initialWebhook);
+    if (initialWebhook !== previousWebhook) {
+        setPreviousWebhook(initialWebhook);
+        setWebhook(initialWebhook || '');
+    }
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -23,18 +22,17 @@ const AlertPipelineCard = ({ initialWebhook }) => {
 
     const handleTestConnection = async () => {
         try {
-            console.log("🧪 Testing connection to:", webhook);
-            const response = await apiFetch('http://localhost:5000/api/users/test-webhook', {
+            const response = await apiFetch('/api/users/test-webhook', {
                 method: 'POST',
                 body: JSON.stringify({ webhookUrl: webhook })
             });
 
             if (response.ok) {
-                showToast('A test alert has been sent to your private Discord channel', 'test');
+                showToast('Test alert queued. Check your Discord channel for delivery.', 'test');
             } else {
                 showToast('Failed to reach Discord. Check your URL.', 'error');
             }
-        } catch (error) {
+        } catch {
             showToast('Network error while testing connection.', 'error');
         }
     };
@@ -42,7 +40,7 @@ const AlertPipelineCard = ({ initialWebhook }) => {
     const handleSaveWebhook = async () => {
         if (!userId) return;
         try {
-            const response = await apiFetch(`http://localhost:5000/api/users/${userId}/webhook`, {
+            const response = await apiFetch(`/api/users/${userId}/webhook`, {
                 method: 'PUT',
                 body: JSON.stringify({ webhookUrl: webhook })
             });
@@ -53,7 +51,7 @@ const AlertPipelineCard = ({ initialWebhook }) => {
             } else {
                 showToast('Failed to save webhook to database.', 'error');
             }
-        } catch (error) {
+        } catch {
             showToast('Network error while saving webhook.', 'error');
         }
     };

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bird } from 'lucide-react';
 
 const Footer = () => {

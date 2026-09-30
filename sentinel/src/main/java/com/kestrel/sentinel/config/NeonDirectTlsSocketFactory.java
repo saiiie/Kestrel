@@ -1,17 +1,13 @@
 package com.kestrel.sentinel.config;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.cert.X509Certificate;
 
 /**
  * A custom SocketFactory that wraps connections in SSL/TLS immediately upon creation.
@@ -24,25 +20,15 @@ import java.security.cert.X509Certificate;
  */
 public class NeonDirectTlsSocketFactory extends SocketFactory {
 
-    private static SSLSocketFactory sslFactory;
+    private static final SSLSocketFactory sslFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
-    static {
-        try {
-            TrustManager[] trustAll = new TrustManager[]{
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-                }
-            };
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            ctx.init(null, trustAll, new java.security.SecureRandom());
-            sslFactory = ctx.getSocketFactory();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create SSL context", e);
-        }
+    private static Socket verifyHostname(Socket socket) {
+        SSLSocket ssl = (SSLSocket) socket;
+        var parameters = ssl.getSSLParameters();
+        parameters.setEndpointIdentificationAlgorithm("HTTPS");
+        ssl.setSSLParameters(parameters);
+        return ssl;
     }
-
     /**
      * Called by the JDBC driver to create an unconnected socket.
      * We return a plain socket that will be connected and then wrapped in SSL.
@@ -55,24 +41,24 @@ public class NeonDirectTlsSocketFactory extends SocketFactory {
 
     @Override
     public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
-        return sslFactory.createSocket(host, port);
+        return verifyHostname(sslFactory.createSocket(host, port));
     }
 
     @Override
     public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
             throws IOException, UnknownHostException {
-        return sslFactory.createSocket(host, port, localHost, localPort);
+        return verifyHostname(sslFactory.createSocket(host, port, localHost, localPort));
     }
 
     @Override
     public Socket createSocket(InetAddress host, int port) throws IOException {
-        return sslFactory.createSocket(host, port);
+        return verifyHostname(sslFactory.createSocket(host, port));
     }
 
     @Override
     public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
             throws IOException {
-        return sslFactory.createSocket(address, port, localAddress, localPort);
+        return verifyHostname(sslFactory.createSocket(address, port, localAddress, localPort));
     }
 
     /**
@@ -92,6 +78,7 @@ public class NeonDirectTlsSocketFactory extends SocketFactory {
             // Now wrap it in SSL, creating the SSL socket on top of the raw socket
             InetSocketAddress addr = (InetSocketAddress) endpoint;
             wrapped = (SSLSocket) sslFactory.createSocket(this, addr.getHostString(), addr.getPort(), true);
+            verifyHostname(wrapped);
             wrapped.startHandshake();
         }
 

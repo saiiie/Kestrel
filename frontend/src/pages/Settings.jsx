@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ProfileSettingsCard from '../components/ProfileSettingsCard';
 import AlertPipelineCard from '../components/AlertPipelineCard';
 import SecurityCard from '../components/SecurityCard';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import DeleteAccountModal from '../components/DeleteAccountModal';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { apiFetch } from '../utils/api';
 
 const Settings = () => {
@@ -23,7 +23,7 @@ const Settings = () => {
 
     const handleChangePassword = async ({ oldPassword, newPassword }) => {
         try {
-            const response = await apiFetch(`http://localhost:5000/api/users/${userId}/password`, {
+            const response = await apiFetch(`/api/users/${userId}/password`, {
                 method: 'PUT',
                 body: JSON.stringify({ oldPassword, newPassword })
             });
@@ -35,14 +35,14 @@ const Settings = () => {
             } else {
                 return { success: false, error: data.error || 'Failed to update password' };
             }
-        } catch (error) {
+        } catch {
             return { success: false, error: 'Network error while updating password' };
         }
     };
 
     const handleDeleteAccount = async () => {
         try {
-            const response = await apiFetch(`http://localhost:5000/api/users/${userId}`, {
+            const response = await apiFetch(`/api/users/${userId}`, {
                 method: 'DELETE'
             });
 
@@ -52,7 +52,7 @@ const Settings = () => {
                 const data = await response.json();
                 showToast(data.error || 'Failed to delete account', 'error');
             }
-        } catch (error) {
+        } catch {
             showToast('Network error while deleting account', 'error');
         }
     };

@@ -1,16 +1,14 @@
-# React + Vite
+# Kestrel frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+See the repository [README](../README.md) for the complete setup and [deployment guide](../DEPLOYMENT.md) for hosting.
 
-Currently, two official plugins are available:
+```sh
+npm ci
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Open http://localhost:5173. Vite proxies `/api` to http://localhost:5000 during development. The backend, PostgreSQL, RabbitMQ, and dispatcher must also run for the complete app.
 
-## React Compiler
+For separate production hosting, set `VITE_API_URL` to your HTTPS gateway origin before `npm run build`. Leave it empty when the same web server proxies `/api` (the included Docker Compose setup). Never put secrets in frontend environment variables.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Checks: `npm run lint` and `npm run build`. Build output: `dist`. `npm run preview` is a local static preview, not a production server or a replacement for the backend.

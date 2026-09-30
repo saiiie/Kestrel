@@ -11,7 +11,7 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
-public class JWTUtil {
+public class JwtUtil {
 
     @Value("${JWT_SECRET}")
     private String secret;

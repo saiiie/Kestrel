@@ -2,7 +2,7 @@ package com.kestrel.sentinel.controller;
 
 import com.kestrel.sentinel.model.User;
 import com.kestrel.sentinel.repository.UserRepository;
-import com.kestrel.sentinel.util.JWTUtil;
+import com.kestrel.sentinel.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +16,9 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JWTUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JWTUtil jwtUtil) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -32,18 +32,22 @@ public class AuthController {
         String confirmPassword = request.get("confirmPassword");
 
         // Simple validation to ensure fields aren't blank
-        if (username == null || email == null || rawPassword == null || confirmPassword == null) {
+        if (username == null || username.isBlank() || email == null || email.isBlank()
+                || rawPassword == null || rawPassword.isBlank() || confirmPassword == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "All fields are required"));
         }
 
         if (!rawPassword.equals(confirmPassword)) {
             return ResponseEntity.badRequest().body(Map.of("error", "Passwords do not match"));
         }
+        if (rawPassword.length() < 8 || rawPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 8 characters and at most 72 UTF-8 bytes"));
+        }
 
         // Hash the password before saving!
         User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setEmail(email);
+        newUser.setUsername(username.trim());
+        newUser.setEmail(email.trim());
         newUser.setPasswordHash(passwordEncoder.encode(rawPassword)); 
 
         try {
@@ -65,6 +69,11 @@ public class AuthController {
         String email = request.get("email");
         String rawPassword = request.get("password");
 
+        if (email == null || email.isBlank() || rawPassword == null || rawPassword.isBlank()
+                || rawPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
+        }
+        email = email.trim();
         Optional<User> userOpt = userRepository.findByEmail(email); // Note: We need to add this to the Repository!
 
         if (userOpt.isPresent()) {

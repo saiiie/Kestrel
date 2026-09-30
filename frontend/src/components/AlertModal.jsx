@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 const AlertModal = memo(({ isOpen, onClose, options, onSave, initialData }) => {
     // State for our form inputs
