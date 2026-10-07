@@ -2,9 +2,68 @@
 
 **Cryptocurrency price alerts, delivered to Discord.**
 
-Kestrel watches the price conditions you care about so you can step away from the charts. Create an alert, connect a Discord channel, and track your rules and recent activity from a single dashboard.
+Kestrel is a full-stack cryptocurrency monitoring application that turns custom price conditions into Discord notifications. Users manage alerts, review activity, and configure their notification channel from a single dashboard.
 
-Built with **React, Spring Boot, Express, PostgreSQL, and RabbitMQ**, the project connects a web application to a background monitoring engine and a dedicated notification worker.
+Built with **React, Spring Boot, Express, PostgreSQL, and RabbitMQ**, the project combines an authenticated web application, scheduled market-data polling, and asynchronous notification delivery.
+
+## Preview
+
+### Alert dashboard
+
+Manage price conditions, track active and paused alerts, and review recent activity.
+
+![Alert dashboard with configured rules, status counts, and recent activity](public/assets/preview/dashboard.png)
+
+<details>
+<summary>Alert creation and account settings</summary>
+
+### Create an alert
+
+Choose an asset, set a price condition, and control whether the rule is active.
+
+![Create-alert dialog with asset, condition, threshold, and status controls](public/assets/preview/create-alert.png)
+
+### Settings
+
+Manage profile details, account security, and the Discord webhook connection.
+
+![Settings page with profile, security, and Discord integration controls](public/assets/preview/settings.png)
+
+</details>
+
+<details>
+<summary>Landing page</summary>
+
+### Introduction
+
+![Kestrel landing page hero section](public/assets/preview/hero-section.png)
+
+### Product features
+
+![Landing page feature overview](public/assets/preview/features.png)
+
+### Getting started
+
+![Landing page walkthrough of how to use Kestrel](public/assets/preview/how-to-use.png)
+
+### Call to action
+
+![Landing page call to action](public/assets/preview/cta.png)
+
+</details>
+
+<details>
+<summary>Sign up and log in</summary>
+
+### Sign up
+
+![Kestrel account registration page](public/assets/preview/sign-up.png)
+
+### Log in
+
+![Kestrel login page](public/assets/preview/log-in.png)
+
+</details>
 
 ## Features
 
@@ -35,39 +94,9 @@ flowchart LR
     Worker --> Discord[Discord channel]
 ```
 
-| Component | Responsibility |
-| --- | --- |
-| [Frontend](frontend/) | React, Vite, and Tailwind CSS for the dashboard, alert editor, and account settings |
-| [API gateway](api-gateway/) | Express entry point that forwards browser API requests to Sentinel |
-| [Sentinel](sentinel/) | Spring Boot service for authentication, rule evaluation, price caching, and PostgreSQL persistence |
-| [Alert dispatcher](alert-dispatcher/) | Node.js worker that consumes RabbitMQ messages and delivers Discord notifications |
-
-### Engineering highlights
+## Highlights
 
 - **Shared market data.** A single polling cycle supplies prices for all users and rules. Dashboard refreshes read the cache without making extra CoinGecko requests.
 - **Asynchronous delivery.** RabbitMQ separates rule evaluation from Discord requests. The worker retries temporary failures and rate limits, then preserves exhausted or permanent failures in a separate queue for inspection.
 - **Confirmed publication.** Sentinel waits for the broker to confirm receipt before pausing a rule; a publication failure leaves the rule active for a later cycle.
 - **Access controls.** JWT authentication, BCrypt password hashing, server-side ownership checks, webhook destination validation, and encrypted webhook storage are implemented in the backend.
-- **Focused regression coverage.** Tests cover authentication and ownership, polling and publication failures, webhook validation, and dispatcher retry behavior. See [verification commands](DEVELOPMENT.md#verification).
-
-## Quick start
-
-With **Docker and Docker Compose** installed and running, from the repository root:
-
-1. Copy [`.env.example`](.env.example) to `.env` if it does not already exist.
-2. Replace the secret placeholders and add your CoinGecko Demo API key. Use distinct random secrets: `JWT_SECRET` needs at least 32 bytes; `ENCRYPTION_SECRET` needs exactly 16, 24, or 32 ASCII bytes; use hexadecimal characters for `RABBITMQ_PASSWORD`.
-3. Start the complete stack:
-
-   ```sh
-   docker compose up -d --build
-   ```
-
-Open **http://localhost** once the services finish starting. Register an account, configure your Discord webhook in **Settings**, and create your first alert. Compose includes PostgreSQL and RabbitMQ.
-
-For individual service setup and troubleshooting, see the [development guide](DEVELOPMENT.md). For hosting, see the [deployment guide](DEPLOYMENT.md).
-
-## Current scope
-
-Kestrel is a portfolio project built for a live demo. The backend polls CoinGecko every **15 seconds** by default, and the dashboard refreshes cached prices, rules, and activity every 15 seconds while visible. Price freshness depends on CoinGecko updates. Trigger history records queueing; Discord delivery can still be pending or fail.
-
-The current design runs one Sentinel instance. Queue publication and database updates are separate operations, so a crash can cause duplicate alerts. Remaining work, including session revocation, rate limiting, and delivery reliability improvements, is tracked in [technical debt](TECHNICAL_DEBT.md).
